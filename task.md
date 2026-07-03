@@ -128,3 +128,82 @@ Risk→belayer-cat, Documentation→paperclip, Strategy→ostrom
 
 Login, database, multi-user, backend, real LLM, external APIs, persistence,
 payments, deploy. These were explicitly deprioritized.
+
+---
+
+# v0.2 — Office Realism + Unique Agents Pass
+
+This iteration resolved the two problems flagged in v0.1:
+1. **It didn't look enough like an office** → rebuilt with real walls, glass
+   partitions, denser furniture, and sensible agent placement.
+2. **There were repeated characters** → every agent now has a UNIQUE pet.
+
+## What changed (v0.2)
+
+### Unique agents (Priority 2 — solved)
+- Added 16 more Codex Pets (30 total on disk).
+- Rewrote `codexPetsManifest.ts` as a per-AGENT mapping: **21 agents → 21
+  distinct pet slugs** (verified: 0 duplicates).
+- Added `detectDuplicatePets()` helper that enforces the no-repeats guarantee
+  and reports any missing pets.
+- Added per-agent **visual variants** (hue/brightness/saturate tints),
+  **accessory glyphs**, **status rings**, and **scale** so agents are
+  differentiated beyond just a label — even species-adjacent pets look distinct.
+
+### Office realism (Priority 1 — major improvement)
+- New `src/lib/officeLayout.ts`: defines **outer perimeter walls**, **glass
+  partitions** between zones, and **desk/stand spots** (anchor points).
+- Walls now render as **tall extruded isometric slabs** (not flat lines):
+  opaque walls around the perimeter + translucent blue glass partitions with
+  mullion lines between zones. The office reads as enclosed rooms, not tinted
+  patches.
+- Furniture is much denser and zone-appropriate: reception desk + sofa,
+  paired engineering desks with monitors, meeting tables + chairs, bookshelves,
+  server racks with blinking LEDs, a wall of command screens, sofas + coffee
+  tables in the break/client areas, lamps with glows, plants everywhere.
+- New furniture types: `lamp`, `coffee-table`, `rug`.
+- Agents are placed at **sensible spots** (sit in front of their desk facing
+  the monitor, or stand by a meeting table/screen) — never floating on top of
+  furniture. The simulation moves them between these spots.
+
+### Composition (Priority 4)
+- Bigger sprites (64px), wider scale clamp (up to 2.2×) so the office fills
+  the screen.
+- Label restraint: floating labels only render when zoomed in enough to be
+  readable (scale > 0.7), avoiding clutter.
+- Agents removed from on top of desks (no more auto-chair overlapping the
+  seated agent).
+
+## Files modified (v0.2)
+- `src/data/codexPetsManifest.ts` (rewritten: per-agent unique pets + variants)
+- `src/data/agents.ts` (rewritten: 21 stable IDs, spot-based placement)
+- `src/data/officeZones.ts` (denser 30×24 plan)
+- `src/data/furniture.ts` (rewritten: denser, layout-aligned)
+- `src/lib/officeLayout.ts` (NEW: walls, partitions, desk/stand spots)
+- `src/lib/simulation.ts` (spot-based movement)
+- `src/components/CodexPetSprite.tsx` (variant/accessory/statusRing/shadow/scale props)
+- `src/components/AgentSprite.tsx` (passes per-agent variant)
+- `src/components/AgentInspector.tsx` (uses per-agent mapping)
+- `src/components/FurnitureLayer.tsx` (real walls + new furniture types)
+- `src/components/OfficeWorld.tsx` (bigger sprites, scale clamp, label gating)
+- `src/types.ts` (new furniture types)
+- `scripts/fetch-codex-pets.mjs` (fixed index to scan whole dir)
+- `public/sprites/codex-pets/` (16 new pets, 30 total)
+
+## Validation (v0.2)
+| Check | Result |
+|---|---|
+| `npx tsc --noEmit` | ✅ 0 errors |
+| `npm run build` | ✅ 52 modules, 827ms |
+| Unique pets (21 agents) | ✅ 21/21 unique, 0 duplicates |
+| All slugs available locally | ✅ 30/30 |
+| Visual screenshot review | ✅ walls visible, agents at desks, dense, populated |
+
+## Known limitations / v0.3 candidates
+- At very zoomed-out views, individual sprite differences are less obvious
+  (each pet IS unique at the data level; zoom in or open the inspector to see).
+- Iso depth-sorting of walls vs. agents is approximate (a front wall may
+  occasionally render over a far agent). A true BSP/height-based sort would
+  fix this in v0.3.
+- Furniture shapes are CSS — could be upgraded to real isometric sprites.
+- Pet licensing still unvalidated for commercial use (demo only).

@@ -1,16 +1,17 @@
 /**
- * AgentSprite — positions an agent on the isometric floor and renders its
- * Codex Pet sprite with the animation matching the agent's state.
+ * AgentSprite — v0.2.
  *
- * The sprite is anchored so its feet sit on the grid cell; the ground shadow
- * (inside CodexPetSprite) grounds it. Depth-sorted via z-index.
+ * Positions an agent on the isometric floor and renders its Codex Pet sprite
+ * with the animation matching the agent's state, PLUS the per-agent variant
+ * (tint), accessory glyph, and scale from the manifest — so every agent has a
+ * strong, unique visual identity (not just a label).
  */
 import { memo } from "react";
 import type { Agent } from "../types";
 import CodexPetSprite from "./CodexPetSprite";
 import { DEFAULT_TILE, gridCenterToScreen, type TileSize } from "../lib/isometric";
 import { animationForState } from "../lib/agentStateAnimation";
-import { accentFor } from "../data/codexPetsManifest";
+import { getAgentPet } from "../data/codexPetsManifest";
 
 interface Props {
   agent: Agent;
@@ -39,8 +40,10 @@ function AgentSpriteImpl({
   const left = pos.x - originX;
   const top = pos.y - originY;
   const depth = agent.gridX + agent.gridY;
-  const accent = accentFor(agent.role);
+  const mapping = getAgentPet(agent.id);
+  const accent = mapping?.accent ?? "#3b82f6";
   const animation = agent.animationOverride ?? animationForState(agent.state);
+  const agentScale = mapping?.scale ?? 1;
 
   return (
     <div
@@ -51,12 +54,10 @@ function AgentSpriteImpl({
       }}
       style={{
         position: "absolute",
-        // Anchor: the agent's feet are at the cell center. The sprite renders
-        // above this point, so translate up by ~size (sprite height ≈ size).
         left,
         top,
         transform: "translate(-50%, -100%)",
-        zIndex: 1000 + depth, // agents always above floor/furniture
+        zIndex: 1000 + depth,
         cursor: "pointer",
         opacity: isDimmed ? 0.32 : 1,
         transition: "opacity 180ms ease",
@@ -71,6 +72,18 @@ function AgentSpriteImpl({
         isSelected={isSelected}
         walking={false}
         accent={accent}
+        variant={
+          mapping?.variant
+            ? {
+                hue: mapping.variant.hue,
+                brightness: mapping.variant.brightness,
+                saturate: mapping.variant.saturate,
+              }
+            : undefined
+        }
+        accessory={mapping?.variant?.accessory}
+        statusRing={accent}
+        scale={agentScale}
         label={showLabels ? agent.name : undefined}
         role={showLabels ? agent.role : undefined}
       />

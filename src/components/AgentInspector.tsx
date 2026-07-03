@@ -5,7 +5,7 @@
  */
 import type { Agent } from "../types";
 import CodexPetSprite from "./CodexPetSprite";
-import { getRoleMapping } from "../data/codexPetsManifest";
+import { getAgentPet } from "../data/codexPetsManifest";
 import { getZone } from "../data/officeZones";
 import { animationForState } from "../lib/agentStateAnimation";
 import { spritesheetUrlFor, isPetAvailable } from "../lib/codexPetSprites";
@@ -39,7 +39,9 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 
 export default function AgentInspector({ agent, onClose }: Props) {
   if (!agent) return null;
-  const mapping = getRoleMapping(agent.role);
+  const mapping = getAgentPet(agent.id);
+  const accent = mapping?.accent ?? "#3b82f6";
+  const emoji = mapping?.emoji ?? "•";
   const zone = getZone(agent.zone);
   const anim = animationForState(agent.state);
   const stateColor = STATE_COLORS[agent.state] ?? "#94a3b8";
@@ -64,8 +66,8 @@ export default function AgentInspector({ agent, onClose }: Props) {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
           <div style={{ fontSize: 16, fontWeight: 700 }}>{agent.name}</div>
-          <div style={{ fontSize: 11.5, color: mapping.accent, fontWeight: 600 }}>
-            {mapping.emoji} {agent.role}
+          <div style={{ fontSize: 11.5, color: accent, fontWeight: 600 }}>
+            {emoji} {agent.role}
           </div>
         </div>
         <button className="btn btn-ghost" onClick={onClose} style={{ padding: "2px 8px" }} aria-label="Close">
@@ -92,7 +94,19 @@ export default function AgentInspector({ agent, onClose }: Props) {
           state={anim}
           size={64}
           isSelected
-          accent={mapping.accent}
+          accent={accent}
+          variant={
+            mapping?.variant
+              ? {
+                  hue: mapping.variant.hue,
+                  brightness: mapping.variant.brightness,
+                  saturate: mapping.variant.saturate,
+                }
+              : undefined
+          }
+          accessory={mapping?.variant?.accessory}
+          statusRing={accent}
+          scale={mapping?.scale ?? 1}
         />
       </div>
 

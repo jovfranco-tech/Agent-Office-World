@@ -1,0 +1,8 @@
+{
+  "id": "maruko",
+  "displayName": "Maruko",
+  "description": "A Chibi Maruko-chan-inspired schoolgirl pet with black bob hair, a yellow hat, and red suspenders.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/maruko-de243fbf00ce/sprite.webp"
+}

@@ -13,7 +13,26 @@
 import type { Agent, AgentState, OfficeEvent } from "../types";
 import { INITIAL_AGENTS } from "../data/agents";
 import { EVENT_TEMPLATES } from "../data/events";
-import { zoneInteriorCells, getZone } from "../data/officeZones";
+import { getZone } from "../data/officeZones";
+import { DESK_SPOTS, STAND_SPOTS } from "./officeLayout";
+
+/** All sitting/standing positions available in a given zone (free of other agents). */
+function freeSpotsInZone(
+  zoneId: string,
+  agents: Agent[],
+  selfIndex: number
+): { x: number; y: number }[] {
+  const desk = DESK_SPOTS.filter((d) => d.zone === zoneId).map((d) => d.sit);
+  const stand = STAND_SPOTS.filter((s) => s.zone === zoneId).map((s) => s.pos);
+  const all = [...desk, ...stand];
+  return all.filter(
+    (c) =>
+      !agents.some(
+        (other, oi) =>
+          oi !== selfIndex && other.gridX === c.x && other.gridY === c.y
+      )
+  );
+}
 
 let eventCounter = 0;
 function nextEventId(): string {
@@ -120,16 +139,10 @@ export function tick(
       if (tasks) agent.task = pick(tasks);
     }
 
-    // 3) Maybe move to a new cell within the zone (walking).
+    // 3) Maybe move to another spot within the current zone (walking to a
+    //    different desk / standing spot — never a random cell on furniture).
     if (Math.random() < 0.35) {
-      const cells = zoneInteriorCells(agent.zone);
-      const free = cells.filter(
-        (c) =>
-          !agents.some(
-            (other, oi) =>
-              oi !== i && other.gridX === c.x && other.gridY === c.y
-          )
-      );
+      const free = freeSpotsInZone(agent.zone, agents, i);
       if (free.length) {
         const c = pick(free);
         agent.gridX = c.x;
@@ -144,18 +157,12 @@ export function tick(
       agent.energy = Math.max(15, agent.energy - 2);
     }
 
-    // 5) Maybe move to a meeting zone.
+    // 5) Meeting states pull the agent toward a meeting zone's spot; otherwise
+    //    agents in a meeting zone may drift back to their home zone's spot.
     if (agent.state === "In Meeting" || agent.state === "Collaborating") {
       const meetingZones = ["war-room", "strategy-room", "client-success"] as const;
       const target = pick([...meetingZones]);
-      const cells = zoneInteriorCells(target);
-      const free = cells.filter(
-        (c) =>
-          !agents.some(
-            (other, oi) =>
-              oi !== i && other.gridX === c.x && other.gridY === c.y
-          )
-      );
+      const free = freeSpotsInZone(target, agents, i);
       if (free.length) {
         const c = pick(free);
         agent.zone = target;
@@ -163,7 +170,6 @@ export function tick(
         agent.gridY = c.y;
       }
     } else {
-      // Sometimes return to the role's home zone if currently in a meeting zone.
       const homeZone = INITIAL_AGENTS[i].zone;
       if (
         (agent.zone === "war-room" ||
@@ -171,14 +177,7 @@ export function tick(
           agent.zone === "client-success") &&
         Math.random() < 0.3
       ) {
-        const cells = zoneInteriorCells(homeZone);
-        const free = cells.filter(
-          (c) =>
-            !agents.some(
-              (other, oi) =>
-                oi !== i && other.gridX === c.x && other.gridY === c.y
-            )
-        );
+        const free = freeSpotsInZone(homeZone, agents, i);
         if (free.length) {
           const c = pick(free);
           agent.zone = homeZone;

@@ -1,0 +1,8 @@
+{
+  "id": "mari",
+  "displayName": "Mari",
+  "description": "A tiny pixel-art companion inspired by Mari Gold from SANABI, a cheerful hacker with yellow headphones and a blue-and-orange coat.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/mari-eb0be7e3dccb/sprite.webp"
+}

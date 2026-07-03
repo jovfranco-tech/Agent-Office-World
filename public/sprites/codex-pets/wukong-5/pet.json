@@ -1,0 +1,8 @@
+{
+  "id": "wukong",
+  "displayName": "Wukong",
+  "description": "A Sun Wukong-inspired monkey pet with bright colors and a short golden staff.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/wukong-a404dde10313/sprite.webp"
+}

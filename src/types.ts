@@ -83,7 +83,10 @@ export type FurnitureType =
   | "command-screen"
   | "sofa"
   | "reception-desk"
-  | "bookshelf";
+  | "bookshelf"
+  | "lamp"
+  | "coffee-table"
+  | "rug";
 
 export interface Furniture {
   id: string;

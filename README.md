@@ -38,44 +38,48 @@ npm run fetch-pets   # re-fetch / add pets (see "Sprites" below)
   Reception, Open Workspace, Engineering Pods, Strategy Room, War Room, QA Lab,
   Research Library, Finance Desk, Client Success, Break Area, Security Desk,
   and the Command Center Wall.
-- **20 mock agents**, each with a name, role, state, zone, task, energy level,
-  and an assigned Codex Pet sprite.
-- Recognizable furniture: desks, monitors, whiteboards, plants, sofas, meeting
-  tables, bookshelves, a server rack with blinking LEDs, and a wall of command
-  screens.
-- Agents sit at desks, gather in meeting rooms, and move around as the
-  simulation runs.
+- **21 mock agents**, each with a name, role, state, zone, task, energy level,
+  and — since v0.2 — a **unique** Codex Pet sprite (no two agents share a pet).
+- Real office structure: **outer perimeter walls** and **glass partitions**
+  between zones, so the floor reads as enclosed rooms, not tinted patches.
+- Recognizable furniture: desks with monitors, whiteboards, plants, sofas,
+  coffee tables, meeting tables, bookshelves, lamps with glows, server racks
+  with blinking LEDs, and a wall of command screens.
+- Agents sit **at their desks** (facing monitors), gather in meeting rooms, and
+  move between sensible spots as the simulation runs.
 
-### Roles & their pets
+### Agents & their unique pets (v0.2)
 
-Each of the 20 roles is mapped to a Codex Pet in
-`src/data/codexPetsManifest.ts`. Some pets are reused across related roles
-(e.g. Infra shares the Ops sprite, Risk shares the Security sprite); agents are
-always differentiated by a **role badge + accent color + status ring + assigned
+Every one of the 21 agents is mapped to a **distinct** Codex Pet in
+`src/data/codexPetsManifest.ts` (verified: 0 duplicates via
+`detectDuplicatePets()`). Each agent is further differentiated by an **accent
+color + accessory glyph + status ring + scale**, so even species-adjacent pets
+read as separate characters. The mapping:
 zone**, so no two agents look truly identical in context.
 
-| Role | Pet slug | Accent |
-|---|---|---|
-| CEO | `ostrom` | 👑 amber |
-| PMO | `maisenpai` | 📋 purple |
-| Research | `heimerdinger` | 🔬 cyan |
-| Coding | `boba` | 💻 blue |
-| QA | `glitchcat` | 🐞 orange |
-| Security | `belayer-cat` | 🛡️ red |
-| Finance | `guan-miao` | 💰 lime |
-| Sales | `dylan-harper` | 📈 pink |
-| Support | `tabby` | 🎧 teal |
-| Design | `chefito` | 🎨 yellow |
-| Ops | `astro-ops` | ⚙️ sky |
-| Legal/Compliance | `humboldt` | ⚖️ slate |
-| Data | `bytechomp-v2` | 📊 teal |
-| Infra | `astro-ops` | 🏗️ slate |
-| Product | `boba` | 📦 violet |
-| Customer Success | `tabby` | 🤝 green |
-| Automation | `glitchcat` | 🤖 sky |
-| Risk | `belayer-cat` | ⚠️ red |
-| Documentation | `paperclip` | 📝 light |
-| Strategy | `ostrom` | ♟️ amber |
+| Agent | Role | Pet (unique) | Accent |
+|---|---|---|---|
+| Sol | CEO | `ostrom` | 👑 amber |
+| Dario | Strategy | `wukong-5` | ♟️ amber |
+| Hana | PMO | `maisenpai` | 📋 purple |
+| Nova | Coding | `boba` | 💻 blue |
+| Kai | Coding | `xiao-moli` | ⌨️ blue |
+| Kano | Infra | `astro-ops` | 🏗️ slate |
+| Jin | Automation | `meridian` | 🤖 sky |
+| Mira | QA | `glitchcat` | 🐞 orange |
+| Sage | Security | `belayer-cat` | 🛡️ red |
+| Rhea | Risk | `artoria-saber` | ⚠️ red |
+| Elara | Research | `heimerdinger` | 🔬 cyan |
+| Theo | Data | `bytechomp-v2` | 📊 teal |
+| Orion | Product | `marcille-dungeon-meshi` | 📦 violet |
+| Vega | Design | `chefito` | 🎨 yellow |
+| Pax | Sales | `dylan-harper` | 📈 pink |
+| Iris | Support | `tabby` | 🎧 teal |
+| Lior | Customer Success | `lulu-capybara-2` | 🤝 green |
+| Atlas | Ops | `pelican-pedal` | ⚙️ sky |
+| Nadia | Finance | `guan-miao` | 💰 lime |
+| Cyrus | Legal/Compliance | `humboldt` | ⚖️ slate |
+| Wren | Documentation | `paperclip` | 📝 light |
 
 ---
 

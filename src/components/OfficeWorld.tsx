@@ -49,11 +49,11 @@ export default function OfficeWorld({
     function fit() {
       const el = stageRef.current;
       if (!el) return;
-      const padding = 40;
+      const padding = 32;
       const availW = el.clientWidth - padding * 2;
       const availH = el.clientHeight - padding * 2;
       const s = Math.min(availW / width, availH / height);
-      setScale(Math.max(0.3, Math.min(1.4, s)));
+      setScale(Math.max(0.35, Math.min(2.2, s)));
     }
     fit();
     window.addEventListener("resize", fit);
@@ -71,7 +71,12 @@ export default function OfficeWorld({
     onSelectZone(null);
   }
 
-  const spriteSize = 56;
+  const spriteSize = 64;
+  // Only render floating labels when zoomed in enough that they won't clutter,
+  // OR always respect the user's explicit toggle. We AND the two: the toggle
+  // must be on AND the scale must be above a readability threshold.
+  const labelsReadable = scale > 0.7;
+  const effectiveShowLabels = showLabels && labelsReadable;
 
   return (
     <div
@@ -123,7 +128,7 @@ export default function OfficeWorld({
               size={spriteSize}
               isSelected={selectedAgentId === agent.id}
               isDimmed={isDimmed}
-              showLabels={showLabels}
+              showLabels={effectiveShowLabels}
               onSelect={onSelectAgent}
             />
           );

@@ -1,9 +1,15 @@
 /**
- * CodexPetSprite
+ * CodexPetSprite — v0.2.
  *
  * Renders a single Codex Pet from a local spritesheet using CSS
- * `background-position` to step through frames. Animation is driven by
- * requestAnimationFrame against the atlas loop duration.
+ * `background-position`, advanced by requestAnimationFrame.
+ *
+ * New v0.2 props allow strong per-agent visual differentiation:
+ *   - variant:   hue-rotate / brightness / saturate tint
+ *   - accessory: a small emoji glyph drawn beside the pet
+ *   - statusRing: explicit ring color
+ *   - shadow:    toggle the ground shadow
+ *   - scale:     uniform size multiplier
  *
  * If the pet slug is not available locally, it renders an explicit, minimal
  * "missing sprite" marker — never a pretty fake placeholder.
@@ -23,24 +29,36 @@ import {
   spritesheetUrlFor,
 } from "../lib/codexPetSprites";
 
+export interface PetVariant {
+  /** Hue-rotate in degrees. */
+  hue?: number;
+  /** Brightness multiplier (1 = none). */
+  brightness?: number;
+  /** Saturate multiplier (1 = none). */
+  saturate?: number;
+}
+
 export interface CodexPetSpriteProps {
   petSlug: string;
-  /** Animation alias (idle, wave, run, failed, review, jump, thinking, working, blocked). */
   state: CodexPetAnimationAlias;
-  /** Display width in px. Height auto-derived from atlas ratio (192:208). */
+  /** Base display width in px. Height auto-derived from atlas ratio. */
   size: number;
-  /** Facing direction; flips the sprite horizontally when "left". */
   direction?: "left" | "right";
-  /** Highlight this sprite (e.g. selected agent). */
   isSelected?: boolean;
-  /** Optional floating label above the sprite. */
   label?: string;
-  /** Role badge text (small chip near the sprite). */
   role?: string;
-  /** Whether the agent is currently walking (adds a bob). */
   walking?: boolean;
-  /** Accent color for selection ring / label border. */
   accent?: string;
+  /** v0.2: visual variant (tint) applied to the sprite. */
+  variant?: PetVariant;
+  /** v0.2: a small accessory glyph drawn beside the pet. */
+  accessory?: string;
+  /** v0.2: explicit status ring color (defaults to accent). */
+  statusRing?: string;
+  /** v0.2: toggle the ground shadow (default true). */
+  shadow?: boolean;
+  /** v0.2: uniform size multiplier on top of `size` (default 1). */
+  scale?: number;
   /** Optional pet.json override loaded by the parent (for non-default atlas). */
   petJson?: ResolvedPetSprite;
 }
@@ -55,21 +73,24 @@ export default function CodexPetSprite({
   role,
   walking = false,
   accent = "#3b82f6",
+  variant,
+  accessory,
+  statusRing,
+  shadow = true,
+  scale = 1,
 }: CodexPetSpriteProps) {
   const available = isPetAvailable(petSlug);
   const atlas = resolveAtlas(undefined) ?? DEFAULT_ATLAS;
   const animation = aliasToAnimation(state);
+  const ringColor = statusRing ?? accent;
 
-  // Frame progress 0..1, advanced by rAF against the loop duration.
   const [progress, setProgress] = useState(0);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Reset timing whenever the animation changes so the new anim starts clean.
     startRef.current = null;
     const loopMs = (atlas.animations[animation] ?? atlas.animations.idle).loopMs;
-
     const tick = (t: number) => {
       if (startRef.current === null) startRef.current = t;
       const elapsed = t - startRef.current;
@@ -84,8 +105,8 @@ export default function CodexPetSprite({
 
   // ---- Missing sprite: explicit, minimal marker (NOT a pretty fake) -------
   if (!available) {
-    const w = size;
-    const h = Math.round((size * atlas.cellHeight) / atlas.cellWidth);
+    const w = size * scale;
+    const h = Math.round((size * atlas.cellHeight * scale) / atlas.cellWidth);
     return (
       <div
         className="missing-sprite"
@@ -99,8 +120,8 @@ export default function CodexPetSprite({
     );
   }
 
-  const width = size;
-  const height = Math.round((size * atlas.cellHeight) / atlas.cellWidth);
+  const width = size * scale;
+  const height = Math.round((size * atlas.cellHeight * scale) / atlas.cellWidth);
   const frame = getFrame(atlas, animation, progress);
   const { backgroundPosition, backgroundSize } = backgroundPositionFor(
     atlas,
@@ -108,6 +129,14 @@ export default function CodexPetSprite({
     width,
     height
   );
+
+  // Build the CSS filter: drop-shadow + optional variant tints.
+  const filters: string[] = [];
+  if (isSelected) filters.push(`drop-shadow(0 0 6px ${accent}cc)`);
+  else filters.push("drop-shadow(0 3px 3px rgba(0,0,0,0.45))");
+  if (variant?.hue) filters.push(`hue-rotate(${variant.hue}deg)`);
+  if (variant?.brightness) filters.push(`brightness(${variant.brightness})`);
+  if (variant?.saturate) filters.push(`saturate(${variant.saturate})`);
 
   return (
     <div
@@ -119,16 +148,18 @@ export default function CodexPetSprite({
       }}
     >
       {/* Ground shadow so the pet feels anchored to the floor */}
-      <div
-        className="pet-shadow"
-        style={{
-          width: width * 0.8,
-          height: height * 0.18,
-          left: "50%",
-          top: height * 0.92,
-          opacity: 0.5,
-        }}
-      />
+      {shadow && (
+        <div
+          className="pet-shadow"
+          style={{
+            width: width * 0.8,
+            height: height * 0.18,
+            left: "50%",
+            top: height * 0.92,
+            opacity: 0.5,
+          }}
+        />
+      )}
       {/* Selection / hover ring marker on the floor */}
       {isSelected && (
         <div
@@ -138,9 +169,9 @@ export default function CodexPetSprite({
             height: width * 0.9,
             left: "50%",
             top: height * 0.95,
-            border: `2px solid ${accent}`,
-            boxShadow: `0 0 12px ${accent}aa`,
-            background: `${accent}14`,
+            border: `2px solid ${ringColor}`,
+            boxShadow: `0 0 12px ${ringColor}aa`,
+            background: `${ringColor}14`,
           }}
         />
       )}
@@ -155,11 +186,26 @@ export default function CodexPetSprite({
           backgroundImage: `url(${spritesheetUrlFor(petSlug)})`,
           backgroundPosition,
           backgroundSize,
-          filter: isSelected
-            ? `drop-shadow(0 0 6px ${accent}cc)`
-            : "drop-shadow(0 3px 3px rgba(0,0,0,0.45))",
+          filter: filters.join(" "),
         }}
       />
+      {/* Accessory glyph (kept un-flipped so it reads correctly) */}
+      {accessory && (
+        <div
+          style={{
+            position: "absolute",
+            right: -2,
+            top: 2,
+            fontSize: Math.max(11, width * 0.26),
+            transform: direction === "left" ? "scaleX(-1)" : undefined,
+            filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.6))",
+            pointerEvents: "none",
+            lineHeight: 1,
+          }}
+        >
+          {accessory}
+        </div>
+      )}
       {/* Floating label + role chip (counter-flipped if facing left) */}
       {(label || role) && (
         <div

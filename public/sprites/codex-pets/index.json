@@ -1,49 +1,97 @@
 {
-  "generatedAt": "2026-07-02T22:52:57.429Z",
+  "generatedAt": "2026-07-03T06:14:26.630Z",
   "source": "petdex (https://petdex.dev)",
   "licenseNote": "Pet assets are owned by their submitters. Demo/local use only until per-pet commercial licensing is validated.",
   "pets": [
     {
-      "slug": "boba"
-    },
-    {
-      "slug": "tabby"
-    },
-    {
-      "slug": "belayer-cat"
-    },
-    {
-      "slug": "glitchcat"
-    },
-    {
-      "slug": "heimerdinger"
+      "slug": "artoria-saber"
     },
     {
       "slug": "astro-ops"
     },
     {
-      "slug": "chefito"
+      "slug": "belayer-cat"
+    },
+    {
+      "slug": "biscuit"
+    },
+    {
+      "slug": "boba"
     },
     {
       "slug": "bytechomp-v2"
     },
     {
-      "slug": "ostrom"
-    },
-    {
-      "slug": "humboldt"
-    },
-    {
-      "slug": "paperclip"
+      "slug": "chefito"
     },
     {
       "slug": "dylan-harper"
     },
     {
+      "slug": "glitchcat"
+    },
+    {
       "slug": "guan-miao"
     },
     {
+      "slug": "heimerdinger"
+    },
+    {
+      "slug": "humboldt"
+    },
+    {
+      "slug": "koharu"
+    },
+    {
+      "slug": "lavender-plush"
+    },
+    {
+      "slug": "lulu-capybara-2"
+    },
+    {
       "slug": "maisenpai"
+    },
+    {
+      "slug": "marcille-dungeon-meshi"
+    },
+    {
+      "slug": "mari"
+    },
+    {
+      "slug": "maruko"
+    },
+    {
+      "slug": "meridian"
+    },
+    {
+      "slug": "mo-tuan-tuan"
+    },
+    {
+      "slug": "ostrom"
+    },
+    {
+      "slug": "paperclip"
+    },
+    {
+      "slug": "pearl-houzuki-2"
+    },
+    {
+      "slug": "pelican-pedal"
+    },
+    {
+      "slug": "silvermoon"
+    },
+    {
+      "slug": "subaru-2"
+    },
+    {
+      "slug": "tabby"
+    },
+    {
+      "slug": "wukong-5"
+    },
+    {
+      "slug": "xiao-moli"
     }
   ]
 }

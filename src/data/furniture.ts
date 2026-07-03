@@ -1,93 +1,128 @@
 /**
- * Office furniture layout. Pieces are placed on the grid to give each zone a
- * recognizable, lived-in feel: desks with monitors in engineering, a meeting
- * table in the war room, sofas in the break area, server racks + a command
- * wall, plants scattered around, whiteboards, etc.
+ * Office furniture — v0.2.
+ *
+ * Most desks are generated from the DESK_SPOTS in lib/officeLayout.ts so that
+ * furniture and agent seating stay perfectly aligned (agents sit in front of
+ * their desk, never on top of it). Zone-specific pieces (meeting tables,
+ * server racks, sofas, plants, lamps, the command wall, whiteboards) are
+ * added explicitly to give each zone a recognizable, dense, lived-in look.
  */
 import type { Furniture } from "../types";
+import { DESK_SPOTS } from "../lib/officeLayout";
 
-export const FURNITURE: Furniture[] = [
-  // Reception / Lobby
-  { id: "f-rec-desk", type: "reception-desk", x: 1, y: 1, w: 3, h: 1, zone: "reception" },
-  { id: "f-rec-sofa", type: "sofa", x: 1, y: 3, w: 2, h: 1, zone: "reception" },
-  { id: "f-rec-plant", type: "plant", x: 4, y: 1, w: 1, h: 1, zone: "reception" },
+const furniture: Furniture[] = [];
+let fid = 0;
+const F = (
+  type: Furniture["type"],
+  x: number,
+  y: number,
+  w = 1,
+  h = 1,
+  zone?: Furniture["zone"],
+  rot?: number
+) => {
+  fid += 1;
+  furniture.push({ id: `f-${fid}`, type, x, y, w, h, zone, rot });
+};
 
-  // Open Workspace — hot desks with monitors
-  { id: "f-ow-d1", type: "desk", x: 7, y: 2, w: 2, h: 1, zone: "open-workspace" },
-  { id: "f-ow-d2", type: "desk", x: 10, y: 2, w: 2, h: 1, zone: "open-workspace" },
-  { id: "f-ow-d3", type: "desk", x: 13, y: 2, w: 2, h: 1, zone: "open-workspace" },
-  { id: "f-ow-d4", type: "desk", x: 7, y: 5, w: 2, h: 1, zone: "open-workspace" },
-  { id: "f-ow-d5", type: "desk", x: 10, y: 5, w: 2, h: 1, zone: "open-workspace" },
-  { id: "f-ow-m1", type: "monitor", x: 7, y: 1, w: 1, h: 1, zone: "open-workspace" },
-  { id: "f-ow-m2", type: "monitor", x: 10, y: 1, w: 1, h: 1, zone: "open-workspace" },
-  { id: "f-ow-m3", type: "monitor", x: 13, y: 1, w: 1, h: 1, zone: "open-workspace" },
-  { id: "f-ow-wb", type: "whiteboard", x: 14, y: 5, w: 2, h: 1, zone: "open-workspace" },
-  { id: "f-ow-plant", type: "plant", x: 6, y: 6, w: 1, h: 1, zone: "open-workspace" },
+// --- Desks + monitors, generated from desk spots ----------------
+// (We deliberately do NOT auto-add chairs: the agent sprite IS the seated
+// person at the sit position. Adding a chair there would overlap the agent.)
+for (const spot of DESK_SPOTS) {
+  // The desk surface
+  F("desk", spot.desk.x, spot.desk.y, spot.desk.w, spot.desk.h, spot.zone);
+  // A monitor on the back edge of the desk (agent faces it while seated)
+  F("monitor", spot.desk.x + (spot.desk.w > 1 ? 0 : 0), spot.desk.y, 1, 1, spot.zone);
+}
 
-  // Engineering Pods — clustered desks + server rack
-  { id: "f-eng-d1", type: "desk", x: 17, y: 2, w: 2, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-d2", type: "desk", x: 20, y: 2, w: 2, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-d3", type: "desk", x: 23, y: 2, w: 2, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-d4", type: "desk", x: 17, y: 5, w: 2, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-d5", type: "desk", x: 20, y: 5, w: 2, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-m1", type: "monitor", x: 17, y: 1, w: 1, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-m2", type: "monitor", x: 20, y: 1, w: 1, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-m3", type: "monitor", x: 23, y: 1, w: 1, h: 1, zone: "engineering-pods" },
-  { id: "f-eng-rack", type: "server-rack", x: 24, y: 5, w: 1, h: 2, zone: "engineering-pods" },
-  { id: "f-eng-wb", type: "whiteboard", x: 17, y: 6, w: 2, h: 1, zone: "engineering-pods" },
+// --- Reception -----------------------------------------------------------
+F("reception-desk", 2, 1, 3, 1, "reception"); // (overlap with desk-rec-1 is fine, drawn on top)
+F("sofa", 1, 3, 2, 1, "reception");
+F("plant", 5, 1, 1, 1, "reception");
+F("plant", 1, 4, 1, 1, "reception");
+F("lamp", 6, 3, 1, 1, "reception");
+F("rug", 2, 3, 3, 1, "reception");
 
-  // Strategy Room — meeting table + whiteboard
-  { id: "f-str-table", type: "meeting-table", x: 1, y: 7, w: 3, h: 2, zone: "strategy-room" },
-  { id: "f-str-wb", type: "whiteboard", x: 4, y: 6, w: 1, h: 2, zone: "strategy-room" },
-  { id: "f-str-plant", type: "plant", x: 1, y: 9, w: 1, h: 1, zone: "strategy-room" },
+// --- Open Workspace extras ----------------------------------------------
+F("whiteboard", 14, 5, 2, 1, "open-workspace");
+F("plant", 7, 6, 1, 1, "open-workspace");
+F("plant", 15, 6, 1, 1, "open-workspace");
+F("lamp", 11, 6, 1, 1, "open-workspace");
 
-  // War Room — big meeting table
-  { id: "f-war-table", type: "meeting-table", x: 1, y: 13, w: 4, h: 2, zone: "war-room" },
-  { id: "f-war-wb", type: "whiteboard", x: 5, y: 12, w: 1, h: 2, zone: "war-room" },
+// --- Engineering Pods extras --------------------------------------------
+F("server-rack", 28, 5, 1, 2, "engineering-pods");
+F("whiteboard", 17, 6, 2, 1, "engineering-pods");
+F("plant", 17, 6, 1, 1, "engineering-pods");
+F("plant", 28, 1, 1, 1, "engineering-pods");
+F("lamp", 22, 6, 1, 1, "engineering-pods");
 
-  // QA Lab — desks + monitors
-  { id: "f-qa-d1", type: "desk", x: 8, y: 13, w: 2, h: 1, zone: "qa-lab" },
-  { id: "f-qa-d2", type: "desk", x: 11, y: 13, w: 2, h: 1, zone: "qa-lab" },
-  { id: "f-qa-m1", type: "monitor", x: 8, y: 12, w: 1, h: 1, zone: "qa-lab" },
-  { id: "f-qa-m2", type: "monitor", x: 11, y: 12, w: 1, h: 1, zone: "qa-lab" },
-  { id: "f-qa-rack", type: "server-rack", x: 11, y: 15, w: 1, h: 1, zone: "qa-lab" },
+// --- Strategy Room (meeting table + whiteboard) -------------------------
+F("meeting-table", 1, 6, 5, 3, "strategy-room");
+F("whiteboard", 6, 5, 1, 2, "strategy-room");
+F("plant", 1, 10, 1, 1, "strategy-room");
+F("lamp", 3, 5, 1, 1, "strategy-room");
+F("chair", 2, 6, 1, 1, "strategy-room");
+F("chair", 5, 6, 1, 1, "strategy-room");
+F("chair", 2, 9, 1, 1, "strategy-room");
+F("chair", 5, 9, 1, 1, "strategy-room");
 
-  // Research Library — bookshelves + desks
-  { id: "f-lib-sh1", type: "bookshelf", x: 14, y: 12, w: 1, h: 2, zone: "research-library" },
-  { id: "f-lib-sh2", type: "bookshelf", x: 17, y: 12, w: 1, h: 2, zone: "research-library" },
-  { id: "f-lib-d1", type: "desk", x: 14, y: 15, w: 2, h: 1, zone: "research-library" },
-  { id: "f-lib-d2", type: "desk", x: 16, y: 15, w: 2, h: 1, zone: "research-library" },
+// --- Research Library (bookshelves + analysis desks) --------------------
+F("bookshelf", 6, 13, 1, 4, "research-library");
+F("bookshelf", 1, 17, 5, 1, "research-library");
+F("lamp", 3, 13, 1, 1, "research-library");
+F("plant", 1, 13, 1, 1, "research-library");
 
-  // Finance Desk
-  { id: "f-fin-d1", type: "desk", x: 20, y: 13, w: 2, h: 1, zone: "finance-desk" },
-  { id: "f-fin-d2", type: "desk", x: 23, y: 13, w: 2, h: 1, zone: "finance-desk" },
-  { id: "f-fin-m1", type: "monitor", x: 20, y: 12, w: 1, h: 1, zone: "finance-desk" },
-  { id: "f-fin-plant", type: "plant", x: 24, y: 15, w: 1, h: 1, zone: "finance-desk" },
+// --- War Room (big screen wall + meeting table) -------------------------
+F("command-screen", 1, 18, 1, 1, "war-room");
+F("command-screen", 2, 18, 1, 1, "war-room");
+F("command-screen", 3, 18, 1, 1, "war-room");
+F("meeting-table", 2, 21, 5, 2, "war-room");
+F("whiteboard", 8, 19, 1, 2, "war-room");
+F("chair", 3, 21, 1, 1, "war-room");
+F("chair", 6, 21, 1, 1, "war-room");
 
-  // Client Success — lounge meeting table
-  { id: "f-cs-table", type: "meeting-table", x: 7, y: 18, w: 3, h: 2, zone: "client-success" },
-  { id: "f-cs-sofa", type: "sofa", x: 11, y: 18, w: 2, h: 1, zone: "client-success" },
-  { id: "f-cs-plant", type: "plant", x: 7, y: 21, w: 1, h: 1, zone: "client-success" },
+// --- QA Lab extras ------------------------------------------------------
+F("server-rack", 12, 16, 1, 1, "qa-lab");
+F("plant", 8, 16, 1, 1, "qa-lab");
+F("lamp", 11, 13, 1, 1, "qa-lab");
 
-  // Break Area — sofas + plants
-  { id: "f-brk-sofa1", type: "sofa", x: 15, y: 18, w: 2, h: 1, zone: "break-area" },
-  { id: "f-brk-sofa2", type: "sofa", x: 15, y: 20, w: 2, h: 1, zone: "break-area" },
-  { id: "f-brk-plant1", type: "plant", x: 17, y: 19, w: 1, h: 1, zone: "break-area" },
-  { id: "f-brk-plant2", type: "plant", x: 18, y: 21, w: 1, h: 1, zone: "break-area" },
+// --- Finance Desk extras ------------------------------------------------
+F("plant", 12, 22, 1, 1, "finance-desk");
+F("lamp", 8, 19, 1, 1, "finance-desk");
+F("bookshelf", 8, 22, 2, 1, "finance-desk");
 
-  // Security Desk
-  { id: "f-sec-d1", type: "desk", x: 20, y: 18, w: 2, h: 1, zone: "security-desk" },
-  { id: "f-sec-m1", type: "monitor", x: 20, y: 17, w: 1, h: 1, zone: "security-desk" },
+// --- Command Center Wall (a wall of screens) ----------------------------
+for (let i = 0; i < 8; i++) {
+  F("command-screen", 15 + i * 2, 12, 1, 1, "command-center");
+}
+F("meeting-table", 18, 15, 8, 1, "command-center");
+F("chair", 19, 15, 1, 1, "command-center");
+F("chair", 23, 15, 1, 1, "command-center");
 
-  // Command Center Wall — wall of screens
-  { id: "f-cmd-s1", type: "command-screen", x: 23, y: 17, w: 1, h: 1, zone: "command-center" },
-  { id: "f-cmd-s2", type: "command-screen", x: 23, y: 18, w: 1, h: 1, zone: "command-center" },
-  { id: "f-cmd-s3", type: "command-screen", x: 23, y: 19, w: 1, h: 1, zone: "command-center" },
-  { id: "f-cmd-s4", type: "command-screen", x: 23, y: 20, w: 1, h: 1, zone: "command-center" },
-  { id: "f-cmd-s5", type: "command-screen", x: 25, y: 17, w: 1, h: 1, zone: "command-center" },
-  { id: "f-cmd-s6", type: "command-screen", x: 25, y: 19, w: 1, h: 1, zone: "command-center" },
+// --- Client Success (lounge) --------------------------------------------
+F("sofa", 15, 19, 2, 1, "client-success");
+F("sofa", 15, 22, 2, 1, "client-success");
+F("coffee-table", 18, 20, 2, 1, "client-success");
+F("plant", 20, 19, 1, 1, "client-success");
+F("lamp", 16, 19, 1, 1, "client-success");
 
-  // Scattered plants in corridors
-  { id: "f-cor-plant1", type: "plant", x: 12, y: 9, w: 1, h: 1 },
-  { id: "f-cor-plant2", type: "plant", x: 19, y: 10, w: 1, h: 1 },
-];
+// --- Break Area ---------------------------------------------------------
+F("sofa", 23, 19, 2, 1, "break-area");
+F("coffee-table", 23, 21, 2, 1, "break-area");
+F("plant", 24, 22, 1, 1, "break-area");
+F("plant", 22, 19, 1, 1, "break-area");
+
+// --- Security Desk extras -----------------------------------------------
+F("server-rack", 28, 19, 1, 2, "security-desk");
+F("command-screen", 27, 19, 1, 1, "security-desk");
+F("plant", 26, 22, 1, 1, "security-desk");
+
+// --- Corridor plants (so the floor doesn't feel empty between zones) ----
+F("plant", 9, 9, 1, 1);
+F("plant", 13, 11, 1, 1);
+F("plant", 20, 11, 1, 1);
+F("plant", 25, 11, 1, 1);
+F("lamp", 11, 9, 1, 1);
+F("lamp", 22, 11, 1, 1);
+
+export const FURNITURE: Furniture[] = furniture;

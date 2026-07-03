@@ -1,0 +1,18 @@
+{
+  "id": "biscuit",
+  "displayName": "Biscuit",
+  "description": "A warm, round cream-and-ginger cat.",
+  "animation": {
+    "durationSeconds": 16.6,
+    "sequence": [
+      "stretch",
+      "lieDown",
+      "sleep",
+      "sitUp"
+    ],
+    "loop": true
+  },
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/biscuit-381b3c415e5a/sprite.webp"
+}

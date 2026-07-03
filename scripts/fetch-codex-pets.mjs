@@ -21,7 +21,7 @@
  * demo/local use only until per-pet commercial licensing is validated.
  * See docs/codex-pets-usage.md.
  */
-import { mkdir, writeFile, rm, access } from "node:fs/promises";
+import { mkdir, writeFile, rm, access, readdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -169,16 +169,19 @@ async function main() {
   const ok = results.filter((r) => r.ok).length;
   const fail = results.filter((r) => !r.ok);
 
-  // Write a small index so the app can discover what's available without
-  // hitting the filesystem at runtime.
+  // Write a complete index by scanning the output directory, so the index
+  // always reflects EVERY pet on disk (not just this run's results). This is
+  // what the app imports to know which sprites are available.
+  const dirs = (await readdir(OUT_DIR, { withFileTypes: true }))
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name)
+    .sort();
   const index = {
     generatedAt: new Date().toISOString(),
     source: "petdex (https://petdex.dev)",
     licenseNote:
       "Pet assets are owned by their submitters. Demo/local use only until per-pet commercial licensing is validated.",
-    pets: results
-      .filter((r) => r.ok)
-      .map((r) => ({ slug: r.slug })),
+    pets: dirs.map((slug) => ({ slug })),
   };
   await writeFile(resolve(OUT_DIR, "index.json"), JSON.stringify(index, null, 2));
 
