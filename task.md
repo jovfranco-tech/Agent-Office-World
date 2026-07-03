@@ -263,3 +263,51 @@ with characters on top.
   floor-edge highlight instead of a raised slab.
 - Seated agent poses (z-index behind the desk front edge) for stronger
   "working at desk" reading.
+
+---
+
+# v0.4 — Floorplan Realism + Furniture Replacement
+
+Goal: kill the "isometric map with blocks" feel; make it read as a real office.
+
+## What changed (v0.4)
+
+### Eliminated the big placeholder blocks (the #1 complaint)
+- **Root cause found & fixed**: the Research Library `bookshelf` was laid out
+  as a span-5 piece, which the (tall, narrow) bookshelf Shape scaled into a
+  giant brown wall hiding half the floor. Replaced with proper 1-cell-wide
+  bookshelf UNITS arranged as a row. This was the single biggest "brown box".
+- **Composite conference tables**: `meeting-table` no longer renders as a
+  solid brown rectangle. It now renders as a wood-grain tabletop with a
+  lighter inlay + 4 chairs arranged around the perimeter. Meeting rooms now
+  read as meeting rooms.
+
+### Floor / zones
+- Zone floor overlays dropped to ~40% opacity (was solid). Zones are now
+  distinguished by FURNITURE, not by paint — much less "board of colored
+  regions".
+
+### Density
+- Open Workspace expanded to **6 desks in 2 aligned rows** (was 4), so it
+  clearly reads as "where the team works".
+- Command Center: dense wall of 8 glowing screens + console table + rug +
+  server rack + floor lamp — now a wow-zone.
+- Rugs added under the Strategy, War Room, and Command Center tables.
+
+## Files modified (v0.4)
+- `src/components/FurnitureLayer.tsx` (composite meeting-table renderer)
+- `src/components/OfficeFloor.tsx` (zone overlay opacity)
+- `src/lib/officeLayout.ts` (6 open-workspace desks)
+- `src/data/furniture.ts` (bookshelf units, rugs, console layouts)
+
+## Validation (v0.4)
+- `npx tsc --noEmit` ✅ 0 errors
+- `npm run build` ✅ (CSS 13.5 KB / JS 201 KB gz 62 KB)
+- 21 unique agents, 0 duplicates ✅ (no regression)
+- 69 furniture pieces
+
+## v0.5 candidates
+- Real isometric furniture sprites (the next realism leap beyond CSS shapes).
+- True height-based depth sort (walls/agents/furniture).
+- Seated agent z-index so sprites sit visually behind desk front-edges.
+- Lobby seats, side-tables, divider panels as distinct rendered units.

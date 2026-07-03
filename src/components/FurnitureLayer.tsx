@@ -360,20 +360,77 @@ function Shape({
           />
         </div>
       );
-    case "meeting-table":
+    case "meeting-table": {
+      // Composite conference table: wood-grain top + lighter inlay + chairs
+      // arranged around the perimeter. This replaces the old solid brown box.
+      const w = baseW * 1.15;
+      const h = baseH * 1.15;
+      const chairPositions = [
+        { left: "20%", top: "50%" },
+        { left: "80%", top: "50%" },
+        { left: "50%", top: "15%" },
+        { left: "50%", top: "85%" },
+      ];
       return (
         <div
           style={{
-            width: baseW * 1.15,
-            height: baseH * 1.15,
+            position: "relative",
+            width: w,
+            height: h,
             transform: "translate(-50%, -50%)",
-            background: "linear-gradient(180deg,#4a3624,#2a1d12)",
-            border: "1px solid rgba(210,180,130,0.35)",
-            borderRadius: 10,
-            boxShadow: "0 6px 12px rgba(0,0,0,0.5)",
           }}
-        />
+        >
+          {/* chairs behind/beside the table */}
+          {chairPositions.map((p, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: p.left,
+                top: p.top,
+                width: w * 0.26,
+                height: h * 0.4,
+                transform: "translate(-50%, -50%)",
+                background: "#26324a",
+                borderRadius: "45% 45% 30% 30%",
+                border: "1px solid rgba(150,180,230,0.2)",
+                boxShadow: "0 2px 3px rgba(0,0,0,0.45)",
+                zIndex: 0,
+              }}
+            />
+          ))}
+          {/* tabletop */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: w,
+              height: h,
+              transform: "translate(-50%, -50%)",
+              background:
+                "linear-gradient(135deg, #5b4128 0%, #42301c 60%, #342414 100%)",
+              border: "1px solid rgba(220,190,140,0.4)",
+              borderRadius: 12,
+              boxShadow: "0 6px 14px rgba(0,0,0,0.55)",
+              zIndex: 1,
+            }}
+          >
+            {/* wood grain inlay */}
+            <div
+              style={{
+                position: "absolute",
+                inset: "14%",
+                border: "1px solid rgba(210,180,130,0.25)",
+                borderRadius: 8,
+                backgroundImage:
+                  "repeating-linear-gradient(90deg, rgba(210,180,130,0.08) 0 4px, transparent 4px 9px)",
+              }}
+            />
+          </div>
+        </div>
       );
+    }
     case "coffee-table":
       return (
         <div

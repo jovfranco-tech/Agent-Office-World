@@ -133,7 +133,9 @@ function OfficeFloorImpl({
               width: box.width,
               height: box.height,
               clipPath: box.clipPath,
-              background: zone.color,
+              // Zone tint is faint: the base floor shows through, and zones are
+              // distinguished by FURNITURE, not by paint (v0.4 readability).
+              background: `${zone.color}66`,
               cursor: "pointer",
               transition: "background 160ms ease",
               outline: "none",
@@ -141,7 +143,7 @@ function OfficeFloorImpl({
                 ? "inset 0 0 0 2px rgba(96,165,250,0.9), inset 0 0 30px rgba(96,165,250,0.25)"
                 : isHighlighted
                 ? "inset 0 0 0 1px rgba(96,165,250,0.5)"
-                : "inset 0 0 0 1px rgba(255,255,255,0.04)",
+                : "inset 0 0 0 1px rgba(255,255,255,0.03)",
             }}
             title={zone.name}
           >

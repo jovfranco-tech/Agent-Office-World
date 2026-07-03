@@ -99,11 +99,13 @@ export const DESK_SPOTS: DeskSpot[] = [
   { id: "desk-eng-3", zone: "engineering-pods", desk: { x: 23, y: 1, w: 2, h: 1 }, sit: { x: 24, y: 3 } },
   { id: "desk-eng-4", zone: "engineering-pods", desk: { x: 26, y: 1, w: 2, h: 1 }, sit: { x: 27, y: 3 } },
 
-  // --- Open Workspace (4 desks) ---
+  // --- Open Workspace (6 desks in 2 aligned rows) ---
   { id: "desk-ow-1", zone: "open-workspace", desk: { x: 8, y: 1, w: 2, h: 1 }, sit: { x: 9, y: 3 } },
   { id: "desk-ow-2", zone: "open-workspace", desk: { x: 11, y: 1, w: 2, h: 1 }, sit: { x: 12, y: 3 } },
-  { id: "desk-ow-3", zone: "open-workspace", desk: { x: 8, y: 5, w: 2, h: 1 }, sit: { x: 9, y: 5 } },
-  { id: "desk-ow-4", zone: "open-workspace", desk: { x: 12, y: 5, w: 2, h: 1 }, sit: { x: 13, y: 5 } },
+  { id: "desk-ow-3", zone: "open-workspace", desk: { x: 14, y: 1, w: 2, h: 1 }, sit: { x: 15, y: 3 } },
+  { id: "desk-ow-4", zone: "open-workspace", desk: { x: 8, y: 5, w: 2, h: 1 }, sit: { x: 9, y: 6 } },
+  { id: "desk-ow-5", zone: "open-workspace", desk: { x: 11, y: 5, w: 2, h: 1 }, sit: { x: 12, y: 6 } },
+  { id: "desk-ow-6", zone: "open-workspace", desk: { x: 14, y: 5, w: 2, h: 1 }, sit: { x: 15, y: 6 } },
 
   // --- QA Lab (2 desks) ---
   { id: "desk-qa-1", zone: "qa-lab", desk: { x: 8, y: 13, w: 2, h: 1 }, sit: { x: 9, y: 15 } },

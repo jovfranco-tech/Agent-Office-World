@@ -66,30 +66,30 @@ F("plant", 17, 6, 1, 1, "engineering-pods");
 F("plant", 28, 1, 1, 1, "engineering-pods");
 F("lamp", 22, 6, 1, 1, "engineering-pods");
 
-// --- Strategy Room (meeting table + whiteboard) -------------------------
-F("meeting-table", 1, 6, 5, 3, "strategy-room");
+// --- Strategy Room (conference table + whiteboard + rug) ----------------
+F("rug", 1, 6, 5, 3, "strategy-room");
+F("meeting-table", 2, 7, 3, 2, "strategy-room");
 F("whiteboard", 6, 5, 1, 2, "strategy-room");
 F("plant", 1, 10, 1, 1, "strategy-room");
-F("lamp", 3, 5, 1, 1, "strategy-room");
-F("chair", 2, 6, 1, 1, "strategy-room");
-F("chair", 5, 6, 1, 1, "strategy-room");
-F("chair", 2, 9, 1, 1, "strategy-room");
-F("chair", 5, 9, 1, 1, "strategy-room");
+F("floor-lamp", 3, 5, 1, 1, "strategy-room");
 
-// --- Research Library (bookshelves + analysis desks) --------------------
-F("bookshelf", 6, 13, 1, 4, "research-library");
-F("bookshelf", 1, 17, 5, 1, "research-library");
+// --- Research Library (bookshelves as 1-wide units + analysis desks) ----
+F("bookshelf", 6, 13, 1, 1, "research-library");
+F("bookshelf", 6, 15, 1, 1, "research-library");
+F("bookshelf", 1, 17, 1, 1, "research-library");
+F("bookshelf", 3, 17, 1, 1, "research-library");
+F("bookshelf", 5, 17, 1, 1, "research-library");
 F("lamp", 3, 13, 1, 1, "research-library");
 F("plant", 1, 13, 1, 1, "research-library");
 
-// --- War Room (big screen wall + meeting table) -------------------------
+// --- War Room (screen wall + console table + rug) -----------------------
 F("command-screen", 1, 18, 1, 1, "war-room");
 F("command-screen", 2, 18, 1, 1, "war-room");
 F("command-screen", 3, 18, 1, 1, "war-room");
-F("meeting-table", 2, 21, 5, 2, "war-room");
+F("rug", 2, 21, 5, 2, "war-room");
+F("meeting-table", 3, 21, 3, 1, "war-room");
 F("whiteboard", 8, 19, 1, 2, "war-room");
-F("chair", 3, 21, 1, 1, "war-room");
-F("chair", 6, 21, 1, 1, "war-room");
+F("floor-lamp", 1, 20, 1, 1, "war-room");
 
 // --- QA Lab extras (test benches + checklist board) ----------------------
 F("test-bench", 8, 16, 1, 1, "qa-lab");
@@ -105,13 +105,14 @@ F("plant", 8, 22, 1, 1, "finance-desk");
 F("floor-lamp", 8, 19, 1, 1, "finance-desk");
 F("bookshelf", 8, 22, 1, 1, "finance-desk");
 
-// --- Command Center Wall (a wall of screens) ----------------------------
+// --- Command Center Wall (a dense wall of screens + console) ------------
 for (let i = 0; i < 8; i++) {
   F("command-screen", 15 + i * 2, 12, 1, 1, "command-center");
 }
-F("meeting-table", 18, 15, 8, 1, "command-center");
-F("chair", 19, 15, 1, 1, "command-center");
-F("chair", 23, 15, 1, 1, "command-center");
+F("rug", 18, 15, 8, 2, "command-center");
+F("meeting-table", 20, 15, 5, 1, "command-center");
+F("server-rack", 15, 16, 1, 1, "command-center");
+F("floor-lamp", 28, 15, 1, 1, "command-center");
 
 // --- Client Success (lounge) --------------------------------------------
 F("sofa", 15, 19, 2, 1, "client-success");
