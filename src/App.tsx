@@ -22,11 +22,27 @@ import {
 import { getZone } from "./data/officeZones";
 import { EVENT_TEMPLATES } from "./data/events";
 import { INITIAL_AGENTS } from "./data/agents";
+import { scheduleActivities } from "./lib/agentMovement";
 
 let idc = 0;
 function eid(): string {
   idc += 1;
   return `seed-${Date.now()}-${idc}`;
+}
+function nowStr(): string {
+  return new Date().toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+}
+function roleOf(agentId: string): Agent["role"] {
+  return (
+    INITIAL_AGENTS.find((a) => a.id === agentId)?.role ?? "Coding"
+  );
+}
+function zoneName(zoneId: string): string {
+  return getZone(zoneId)?.name ?? zoneId;
 }
 
 /** Build the very first snapshot, including seed events. */
@@ -60,7 +76,14 @@ export default function App() {
   const [roleFilter, setRoleFilter] = useState<AgentRole | null>(null);
   const [stateFilter, setStateFilter] = useState<AgentState | null>(null);
   const [showLabels, setShowLabels] = useState(true);
-  const [liveMode, setLiveMode] = useState(false);
+  // ?autoplay=1 starts Live Mode on load (also useful for headless verification).
+  const [liveMode, setLiveMode] = useState(() => {
+    try {
+      return new URLSearchParams(window.location.search).get("autoplay") === "1";
+    } catch {
+      return false;
+    }
+  });
   const [hour, setHour] = useState(9);
   const [panelOpen, setPanelOpen] = useState(true);
   const liveRef = useRef<number | null>(null);
@@ -81,7 +104,26 @@ export default function App() {
       return;
     }
     liveRef.current = window.setInterval(() => {
-      setSnap((prev) => tick(prev, 2));
+      setSnap((prev) => {
+        // 1) Advance the business simulation (state/task/energy/events).
+        let next = tick(prev, 2);
+        // 2) Move ~28% of agents to role-logical anchors (visible motion).
+        const moved = scheduleActivities(next.agents, 0.28);
+        // 3) Emit movement events into the timeline so it reflects real motion.
+        if (moved.length) {
+          const moveEvents = moved.map((m) => ({
+            id: eid(),
+            time: nowStr(),
+            agentId: m.agentId,
+            agentName: m.agentName,
+            role: roleOf(m.agentId),
+            message: `walked to ${zoneName(m.toZone)}.`,
+            kind: "info" as const,
+          }));
+          next = { ...next, events: [...moveEvents, ...next.events].slice(0, 40) };
+        }
+        return next;
+      });
     }, 2200);
     return () => {
       if (liveRef.current !== null) {
@@ -92,7 +134,24 @@ export default function App() {
   }, [liveMode]);
 
   const handleSimulateHour = useCallback(() => {
-    setSnap((prev) => simulateHour(prev));
+    setSnap((prev) => {
+      let next = simulateHour(prev);
+      // A burst of movement so "Simulate 1 Hour" produces visible change.
+      const moved = scheduleActivities(next.agents, 0.5);
+      if (moved.length) {
+        const moveEvents = moved.map((m) => ({
+          id: eid(),
+          time: nowStr(),
+          agentId: m.agentId,
+          agentName: m.agentName,
+          role: roleOf(m.agentId),
+          message: `moved to ${zoneName(m.toZone)}.`,
+          kind: "info" as const,
+        }));
+        next = { ...next, events: [...moveEvents, ...next.events].slice(0, 40) };
+      }
+      return next;
+    });
     setHour((h) => (h >= 23 ? 0 : h + 1));
   }, []);
 

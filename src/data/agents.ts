@@ -98,6 +98,10 @@ export function buildAgents(): Agent[] {
       energy: s.energy,
       gridX: pos.x,
       gridY: pos.y,
+      renderX: pos.x, // start rendered exactly at home position
+      renderY: pos.y,
+      facing: "right",
+      activity: "desk-work" as const,
       nextAction: s.nextAction,
     };
   });

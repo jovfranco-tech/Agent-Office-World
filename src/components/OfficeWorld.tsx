@@ -1,20 +1,26 @@
 /**
- * OfficeWorld — the main isometric office view.
+ * OfficeWorld — the main isometric office view. (v0.6: smooth agent movement)
  *
  * Composes: floor + zones + furniture + agents, with:
  *   - responsive auto-scaling to fit the viewport
- *   - depth sorting (z-index = gridX + gridY)
+ *   - depth sorting (z-index = renderX + renderY)
  *   - agent selection + zone selection
  *   - role/state filters (dim non-matching agents)
+ *   - a requestAnimationFrame loop that interpolates each agent's render
+ *     position toward its grid target, so movement is visibly smooth.
  *
- * The whole scene is wrapped in a scaled, centered container.
+ * The rAF loop mutates the agent objects' renderX/renderY in place (the agents
+ * array is owned by App and passed down; we treat the per-agent visual fields
+ * as mutable render state). A frame counter forces re-renders at ~33fps so the
+ * DOM positions update every frame.
  */
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Agent, OfficeZone, AgentRole, AgentState } from "../types";
 import OfficeFloor, { computeSceneBounds } from "./OfficeFloor";
 import FurnitureLayer from "./FurnitureLayer";
 import AgentSprite from "./AgentSprite";
 import { DEFAULT_TILE, type TileSize } from "../lib/isometric";
+import { stepMovement } from "../lib/agentMovement";
 
 interface Props {
   agents: Agent[];
@@ -60,9 +66,45 @@ export default function OfficeWorld({
     return () => window.removeEventListener("resize", fit);
   }, [width, height]);
 
-  // Agents sorted back-to-front for consistent DOM order (painter's algorithm).
+  // ---- Movement loop: interpolate render positions every frame ------------
+  // We keep a stable ref to the latest agents so the rAF closure always reads
+  // current data without re-subscribing each render.
+  const agentsRef = useRef(agents);
+  agentsRef.current = agents;
+  const [, setFrame] = useState(0);
+  const lastTs = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    function loop(ts: number) {
+      if (lastTs.current === null) lastTs.current = ts;
+      const dt = Math.min(0.05, (ts - lastTs.current) / 1000); // clamp dt
+      lastTs.current = ts;
+      // Step the visual movement. Only re-render if something actually moved
+      // (avoids burning a frame when the office is fully still).
+      const before = agentsRef.current.some((a) => a.isMoving);
+      stepMovement(agentsRef.current, dt);
+      const after = agentsRef.current.some((a) => a.isMoving);
+      if (before || after) {
+        setFrame((f) => (f + 1) % 1000000);
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    }
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      lastTs.current = null;
+    };
+  }, []);
+
+  // Agents sorted back-to-front by RENDER position for painter's algorithm.
   const sortedAgents = useMemo(
-    () => [...agents].sort((a, b) => a.gridX + a.gridY - (b.gridX + b.gridY)),
+    () =>
+      [...agents].sort(
+        (a, b) => a.renderX + a.renderY - (b.renderX + b.renderY)
+      ),
+    // Re-sort whenever agents identity changes OR a frame advanced.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [agents]
   );
 
@@ -72,18 +114,11 @@ export default function OfficeWorld({
   }
 
   const spriteSize = 64;
-  // Only render floating labels when zoomed in enough that they won't clutter,
-  // OR always respect the user's explicit toggle. We AND the two: the toggle
-  // must be on AND the scale must be above a readability threshold.
   const labelsReadable = scale > 0.7;
   const effectiveShowLabels = showLabels && labelsReadable;
 
   return (
-    <div
-      ref={stageRef}
-      className="iso-stage"
-      onClick={handleStageClick}
-    >
+    <div ref={stageRef} className="iso-stage" onClick={handleStageClick}>
       <div
         className="iso-scene"
         style={{
@@ -117,7 +152,8 @@ export default function OfficeWorld({
           const matchesFilter =
             (!roleFilter || agent.role === roleFilter) &&
             (!stateFilter || agent.state === stateFilter);
-          const isDimmed = (roleFilter !== null || stateFilter !== null) && !matchesFilter;
+          const isDimmed =
+            (roleFilter !== null || stateFilter !== null) && !matchesFilter;
           return (
             <AgentSprite
               key={agent.id}

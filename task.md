@@ -375,3 +375,78 @@ semantic furniture objects.
 - Height-based depth sort for perfect wall/agent/furniture layering.
 - Seated-agent z-index (sprite visually behind desk front-edge).
 - Slight per-furniture rotation variety for organic feel.
+
+---
+
+# v0.6 — Agent Movement + Activity Animation Pass
+
+Goal: make the office feel ALIVE — agents visibly walk between zones, work at
+desks, join meetings, and show activity effects. Not just data changes.
+
+## Root cause of "static agents" (diagnosed first)
+1. `AgentSprite` hardcoded `walking={false}` — the walk animation never played.
+2. **Teleport, no interpolation**: the simulation set `gridX/gridY` directly;
+   movement was a barely-perceptible CSS slide within the same zone.
+3. **No movement loop**: nothing interpolated positions frame-by-frame, so even
+   when targets changed, the motion wasn't smooth/visible.
+4. **No activity effects**: sprites showed only the idle/working frame, with no
+   visual signal of what they were doing.
+
+## What changed (v0.6)
+
+### New movement architecture
+- `src/data/activityAnchors.ts`: ~33 role-aware activity anchors across all
+  zones (desk-work, meeting, screen-review, research, qa-test,
+  command-monitoring, break, lobby). Agents move to anchors, not random cells.
+- `src/lib/agentMovement.ts`:
+  - `stepMovement(agents, dt)` — interpolates each agent's `renderX/renderY`
+    toward its `gridX/gridY` at 1.6 cells/sec (smooth, not teleport). Verified:
+    a 5-cell move completes in ~3.2s across 95 frames.
+  - `scheduleActivities(agents, ratio)` — picks ~28% of agents each tick and
+    assigns them new role-logical anchor destinations (Coding→Engineering,
+    CEO→Strategy, Security→Command Center, Idle→Break, etc.). Avoids pile-ups
+    via anchor occupancy tracking.
+  - `homeZoneForRole` / `activityForState` — maps roles→zones, states→activities.
+- `OfficeWorld` now runs a `requestAnimationFrame` loop calling `stepMovement`
+  every frame and re-rendering only while agents are moving (~30fps).
+- `Agent` type gained visual fields: `renderX/renderY`, `isMoving`, `facing`,
+  `activity`, `activityUntil`, `anchorId`.
+
+### Visible motion + animation
+- `AgentSprite` now renders at `renderX/renderY` (interpolated), passes
+  `walking={isMoving}` and `direction={facing}`. The walk animation (`run` row)
+  + CSS bob now plays while an agent is en route.
+- `CodexPetSprite` gained an `activity` + `stateLabel` prop that renders a small
+  floating effect above the sprite: 💭 (thinking), ⚠️ (blocked), 💬 (meeting),
+  ☕ (break), 🖥 (review), 📖 (research), 🔬 (qa), ⌨ (working), ✨ (shipping).
+
+### Live Mode / Simulate 1 Hour wired to real motion
+- Live Mode tick now calls `scheduleActivities` and emits movement events
+  ("Nova walked to Engineering Pods.") into the timeline.
+- Simulate 1 Hour moves ~50% of agents at once (a visible burst).
+- `?autoplay=1` query param starts Live Mode on load (for verification/demo).
+- Inspector now shows Activity / Moving / Facing.
+
+## Files modified/created (v0.6)
+- NEW `src/data/activityAnchors.ts`
+- NEW `src/lib/agentMovement.ts`
+- `src/types.ts` (Agent visual fields + ActivityKind)
+- `src/components/OfficeWorld.tsx` (rAF movement loop)
+- `src/components/AgentSprite.tsx` (renderX/Y, walking, facing, activity)
+- `src/components/CodexPetSprite.tsx` (activity + walk animation)
+- `src/components/AgentInspector.tsx` (movement fields)
+- `src/data/agents.ts` (renderX/Y init)
+- `src/App.tsx` (scheduleActivities in Live Mode + autoplay)
+
+## Validation (v0.6)
+- `npx tsc --noEmit` ✅ 0 errors
+- `npm run build` ✅ (JS 210 KB gz 64 KB)
+- Movement interpolation sanity test ✅ (5-cell move → 95 frames → target reached)
+- 33 activity anchors across 12 zones
+- 21 unique agents unchanged (0 duplicates)
+
+## v0.7 candidates
+- Pathfinding (waypoints via corridors) instead of straight-line interpolation.
+- Seated agent z-index (sprite visually behind desk front-edge).
+- More activity effects (typing dots animation, pulse ring under active agent).
+- Activity-driven monitor glow (nearby monitor lights up when an agent works).

@@ -107,6 +107,8 @@ export default function AgentInspector({ agent, onClose }: Props) {
           accessory={mapping?.variant?.accessory}
           statusRing={accent}
           scale={mapping?.scale ?? 1}
+          activity={agent.activity}
+          stateLabel={agent.isMoving ? "walking" : agent.state}
         />
       </div>
 
@@ -127,6 +129,17 @@ export default function AgentInspector({ agent, onClose }: Props) {
       </Row>
       <Row label="Animation">
         <code style={{ fontSize: 11 }}>{anim}</code>
+      </Row>
+      <Row label="Activity">
+        <span style={{ fontSize: 11.5 }}>{agent.activity ?? "—"}</span>
+      </Row>
+      <Row label="Moving">
+        <span style={{ fontSize: 11.5, color: agent.isMoving ? "#22c55e" : "var(--text-muted)" }}>
+          {agent.isMoving ? "● walking" : "○ stationary"}
+        </span>
+      </Row>
+      <Row label="Facing">
+        <span style={{ fontSize: 11.5 }}>{agent.facing ?? "right"}</span>
       </Row>
       <Row label="Pet">
         <span style={{ fontSize: 11.5 }}>

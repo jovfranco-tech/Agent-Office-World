@@ -19,6 +19,7 @@ import type {
   CodexPetAnimationAlias,
   ResolvedPetSprite,
 } from "../types/codexPet";
+import type { ActivityKind } from "../types";
 import {
   DEFAULT_ATLAS,
   aliasToAnimation,
@@ -59,6 +60,10 @@ export interface CodexPetSpriteProps {
   shadow?: boolean;
   /** v0.2: uniform size multiplier on top of `size` (default 1). */
   scale?: number;
+  /** v0.6: current activity (drives a small floating activity effect). */
+  activity?: ActivityKind;
+  /** v0.6: business state for the activity effect emoji. */
+  stateLabel?: string;
   /** Optional pet.json override loaded by the parent (for non-default atlas). */
   petJson?: ResolvedPetSprite;
 }
@@ -78,11 +83,19 @@ export default function CodexPetSprite({
   statusRing,
   shadow = true,
   scale = 1,
+  activity,
+  stateLabel,
 }: CodexPetSpriteProps) {
   const available = isPetAvailable(petSlug);
   const atlas = resolveAtlas(undefined) ?? DEFAULT_ATLAS;
-  const animation = aliasToAnimation(state);
+  // When walking, override to the run animation so the pet visibly "walks".
+  const animation = walking
+    ? aliasToAnimation("run")
+    : aliasToAnimation(state);
   const ringColor = statusRing ?? accent;
+
+  // Activity effect: a small floating emoji above the sprite.
+  const effect = activityEffect(activity, stateLabel);
 
   const [progress, setProgress] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -189,6 +202,28 @@ export default function CodexPetSprite({
           filter: filters.join(" "),
         }}
       />
+      {/* Activity effect: small floating emoji/indicator above the sprite */}
+      {effect && (
+        <div
+          className="activity-effect"
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: -2,
+            transform: `translate(-50%, -100%)${
+              direction === "left" ? " scaleX(-1)" : ""
+            }`,
+            fontSize: Math.max(11, width * 0.24),
+            filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.7))",
+            pointerEvents: "none",
+            lineHeight: 1,
+            whiteSpace: "nowrap",
+          }}
+          title={effect.label}
+        >
+          {effect.glyph}
+        </div>
+      )}
       {/* Accessory glyph (kept un-flipped so it reads correctly) */}
       {accessory && (
         <div
@@ -250,3 +285,45 @@ export default function CodexPetSprite({
     </div>
   );
 }
+
+/**
+ * Map an activity / business state to a small floating visual effect shown
+ * above the sprite. Returns null when no effect applies (idle/walking).
+ */
+function activityEffect(
+  activity: ActivityKind | undefined,
+  stateLabel: string | undefined
+): { glyph: string; label: string } | null {
+  // Walking: no effect (the motion itself is the signal).
+  if (stateLabel === "walking") return null;
+
+  // Business-state-driven effects take priority for clarity.
+  if (stateLabel === "Thinking") return { glyph: "💭", label: "thinking" };
+  if (stateLabel === "Blocked") return { glyph: "⚠️", label: "blocked" };
+  if (stateLabel === "Escalating") return { glyph: "⚠️", label: "escalating" };
+  if (stateLabel === "Shipping") return { glyph: "✨", label: "shipping" };
+  if (stateLabel === "In Meeting" || stateLabel === "Collaborating") {
+    return { glyph: "💬", label: "in meeting" };
+  }
+
+  // Activity-driven effects.
+  switch (activity) {
+    case "meeting":
+      return { glyph: "💬", label: "meeting" };
+    case "command-monitoring":
+    case "screen-review":
+      return { glyph: "🖥", label: "reviewing" };
+    case "research":
+      return { glyph: "📖", label: "researching" };
+    case "qa-test":
+      return { glyph: "🔬", label: "testing" };
+    case "break":
+      return { glyph: "☕", label: "on break" };
+    case "lobby":
+      return { glyph: "🛋", label: "at reception" };
+    case "desk-work":
+    default:
+      return { glyph: "⌨", label: "working" };
+  }
+}
+

@@ -1,10 +1,13 @@
 /**
- * AgentSprite — v0.2.
+ * AgentSprite — v0.6.
  *
- * Positions an agent on the isometric floor and renders its Codex Pet sprite
- * with the animation matching the agent's state, PLUS the per-agent variant
- * (tint), accessory glyph, and scale from the manifest — so every agent has a
- * strong, unique visual identity (not just a label).
+ * Positions an agent using its INTERPOLATED render position (renderX/renderY)
+ * so movement is smooth. Passes movement + activity signals to CodexPetSprite
+ * so the walk animation, facing, and activity effects all reflect real motion.
+ *
+ * NOTE: no CSS transition on left/top — the rAF loop in OfficeWorld updates
+ * renderX/renderY every frame, so the DOM position is already smooth. Adding a
+ * transition here would lag/double-smooth the motion.
  */
 import { memo } from "react";
 import type { Agent } from "../types";
@@ -12,6 +15,7 @@ import CodexPetSprite from "./CodexPetSprite";
 import { DEFAULT_TILE, gridCenterToScreen, type TileSize } from "../lib/isometric";
 import { animationForState } from "../lib/agentStateAnimation";
 import { getAgentPet } from "../data/codexPetsManifest";
+import { activityForState } from "../lib/agentMovement";
 
 interface Props {
   agent: Agent;
@@ -36,18 +40,21 @@ function AgentSpriteImpl({
   showLabels,
   onSelect,
 }: Props) {
-  const pos = gridCenterToScreen(agent.gridX, agent.gridY, tile);
+  // Render at the interpolated position (smoothed each frame by the rAF loop).
+  const pos = gridCenterToScreen(agent.renderX, agent.renderY, tile);
   const left = pos.x - originX;
   const top = pos.y - originY;
-  const depth = agent.gridX + agent.gridY;
+  const depth = Math.round(agent.renderX + agent.renderY);
   const mapping = getAgentPet(agent.id);
   const accent = mapping?.accent ?? "#3b82f6";
   const animation = agent.animationOverride ?? animationForState(agent.state);
   const agentScale = mapping?.scale ?? 1;
+  const activity = agent.activity ?? activityForState(agent.state);
+  const isMoving = agent.isMoving === true;
 
   return (
     <div
-      className="agent-mover no-tap"
+      className="no-tap"
       onClick={(e) => {
         e.stopPropagation();
         onSelect(agent);
@@ -62,15 +69,15 @@ function AgentSpriteImpl({
         opacity: isDimmed ? 0.32 : 1,
         transition: "opacity 180ms ease",
       }}
-      title={`${agent.name} — ${agent.role} (${agent.state})`}
+      title={`${agent.name} — ${agent.role} (${agent.state}${isMoving ? ", moving" : ""})`}
     >
       <CodexPetSprite
         petSlug={agent.petSlug}
         state={animation}
         size={size}
-        direction="right"
+        direction={agent.facing ?? "right"}
         isSelected={isSelected}
-        walking={false}
+        walking={isMoving}
         accent={accent}
         variant={
           mapping?.variant
@@ -84,6 +91,8 @@ function AgentSpriteImpl({
         accessory={mapping?.variant?.accessory}
         statusRing={accent}
         scale={agentScale}
+        activity={activity}
+        stateLabel={isMoving ? "walking" : agent.state}
         label={showLabels ? agent.name : undefined}
         role={showLabels ? agent.role : undefined}
       />

@@ -3,6 +3,17 @@
  */
 import type { CodexPetAnimationAlias } from "./types/codexPet";
 
+/** A kind of activity an agent performs at an anchor (drives visual effects). */
+export type ActivityKind =
+  | "desk-work"
+  | "meeting"
+  | "screen-review"
+  | "research"
+  | "qa-test"
+  | "command-monitoring"
+  | "break"
+  | "lobby";
+
 export type AgentRole =
   | "CEO"
   | "PMO"
@@ -132,6 +143,20 @@ export interface Agent {
   animationOverride?: CodexPetAnimationAlias;
   /** Mock next action shown in the inspector. */
   nextAction: string;
+  // ---- v0.6 visual movement state ----
+  /** Render position (interpolated toward gridX/gridY each frame). */
+  renderX: number;
+  renderY: number;
+  /** True while the agent is moving toward its grid position. */
+  isMoving?: boolean;
+  /** Facing direction for sprite flip. */
+  facing?: "left" | "right";
+  /** Current activity (drives the activity effect). */
+  activity?: ActivityKind;
+  /** Timestamp (ms) until which the current activity holds. */
+  activityUntil?: number;
+  /** Anchor id the agent is heading to / occupying. */
+  anchorId?: string;
 }
 
 export interface OfficeEvent {
