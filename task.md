@@ -311,3 +311,67 @@ Goal: kill the "isometric map with blocks" feel; make it read as a real office.
 - True height-based depth sort (walls/agents/furniture).
 - Seated agent z-index so sprites sit visually behind desk front-edges.
 - Lobby seats, side-tables, divider panels as distinct rendered units.
+
+---
+
+# v0.5 — Hard visual refactor: semantic furniture objects
+
+Goal: replace the "zones with blocks" visual logic with "office built from
+furniture". The office is now generated ENTIRELY from small, individual,
+semantic furniture objects.
+
+## What changed (v0.5)
+
+### Architectural: furniture as semantic objects
+- Rewrote `src/data/furniture.ts` around a `workstation(x,y,zone,monitor)`
+  helper that emits THREE separate objects per desk: a `desk` + a `chair`
+  (placed in front) + a `monitor`/`dual-monitor`/`laptop` (on the back edge).
+- Every item is now a small standalone piece rendered at its own grid cell.
+  No more composite blocks, no more big rectangles.
+
+### Killed the placeholder look
+- `desk` Shape rewritten as a small surface with leg hints + shadow (was a
+  composite that drew its own chair/monitor — now those are separate items).
+- `meeting-table` is now a small wood-grain table (1 cell); the chairs around
+  it are SEPARATE `chair` objects placed individually. Meeting rooms read as
+  table + chairs + whiteboard.
+- Every Shape is now small and recognizable (monitor with stand + glow,
+  chair as a seat, plant in a pot, server rack with LEDs, etc.).
+
+### Floor
+- Zone tint dropped to ~20% opacity. Zones are read from FURNITURE, not paint.
+  No big colored regions.
+
+### Density (per the spec's minimums)
+- Open Workspace: 6 workstations (desk+chair+monitor each), 2 aligned rows.
+- Engineering Pods: 3 pods, dual-monitor workstations.
+- Strategy Room: small table + 6 chairs + whiteboard + rug.
+- Command Center: wall of 6 screens + console + rack + lamp + rug.
+- Research: 4 bookshelf units + 2 laptop workstations + whiteboard.
+- Finance: 2 workstations + 2 filing cabinets.
+- Break Area: sofa + coffee table + coffee machine + plants + lamp.
+- Reception: reception desk + chair + branded sign + bench + plants + lamp.
+
+## Runtime furniture counts (from workstation emissions + standalone)
+- ~19 desks, ~29 chairs (workstation + meeting), ~27 monitors, 6 command
+  screens, 6 whiteboards, 4 bookshelves, 4 sofas, 17 plants, 12 lamps,
+  3 server racks, 2 filing cabinets, 2 test benches, 1 coffee machine,
+  4 rugs, 1 reception desk, 1 wall-sign.
+
+## Files modified (v0.5)
+- `src/data/furniture.ts` (full rewrite — semantic objects + workstation helper)
+- `src/components/FurnitureLayer.tsx` (Shape rewritten — small standalone items)
+- `src/components/OfficeFloor.tsx` (zone tint ~20%)
+- `src/types.ts` (added dual-monitor, laptop, divider, glass-partition, wall-screen)
+- `task.md`
+
+## Validation (v0.5)
+- `npx tsc --noEmit` ✅ 0 errors
+- `npm run build` ✅ (CSS 13.6 KB / JS 201 KB gz 62 KB)
+- 21 unique agents, 0 duplicates ✅ (no regression)
+
+## v0.6 candidates
+- Real isometric furniture sprites (the final realism leap).
+- Height-based depth sort for perfect wall/agent/furniture layering.
+- Seated-agent z-index (sprite visually behind desk front-edge).
+- Slight per-furniture rotation variety for organic feel.

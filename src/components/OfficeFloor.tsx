@@ -133,9 +133,10 @@ function OfficeFloorImpl({
               width: box.width,
               height: box.height,
               clipPath: box.clipPath,
-              // Zone tint is faint: the base floor shows through, and zones are
-              // distinguished by FURNITURE, not by paint (v0.4 readability).
-              background: `${zone.color}66`,
+              // Zone tint is nearly invisible (v0.5): zones are read purely
+              // from furniture arrangement, not paint. Just a hair of tint for
+              // hover/selection affordance.
+              background: `${zone.color}33`,
               cursor: "pointer",
               transition: "background 160ms ease",
               outline: "none",
