@@ -21,8 +21,14 @@ export interface WallSegment {
   /** End grid cell (exclusive end). */
   x2: number;
   y2: number;
-  /** "outer" = full-height wall; "glass" = low partition. */
-  kind: "outer" | "glass";
+  /**
+   * Wall tier:
+   *   - "outer"  : the building perimeter (low, subtle — keeps the office
+   *                enclosed without looking like a dungeon barrier).
+   *   - "glass"  : translucent glass partition between zones (default).
+   *   - "low"    : a very low divider (planter box / half-wall).
+   */
+  kind: "outer" | "glass" | "low";
 }
 
 /**
@@ -53,31 +59,22 @@ export function buildOuterWalls(): WallSegment[] {
 }
 
 /**
- * Glass partitions between zones. Drawn along shared internal boundaries so
- * zones are visually separated while the floor remains continuous. A doorway
- * gap is left in the middle of each partition so agents "can walk through".
+ * Internal partitions — kept MINIMAL so the floor reads as one continuous
+ * open office, not a grid of rooms. Only the meeting rooms (Strategy, War
+ * Room) get a light glass enclosure; everything else flows. Open areas are
+ * separated by furniture + subtle floor material change, not walls.
  */
 export function buildGlassPartitions(): WallSegment[] {
   const segs: WallSegment[] = [];
-  // Vertical partition between Strategy Room and the central column.
-  segs.push({ x1: 7, y1: 5, x2: 7, y2: 12, kind: "glass" });
-  // Vertical partition between Research Library / War Room and the center.
-  segs.push({ x1: 7, y1: 12, x2: 7, y2: 18, kind: "glass" });
-  segs.push({ x1: 7, y1: 18, x2: 7, y2: 24, kind: "glass" });
-  // Glass wall across the front of the Strategy Room (open workspace side).
-  segs.push({ x1: 0, y1: 5, x2: 7, y2: 5, kind: "glass" });
-  // Glass across the War Room front.
+  // Strategy Room glass enclosure (3 sides, open doorway on the right).
+  segs.push({ x1: 0, y1: 5, x2: 7, y2: 5, kind: "glass" }); // front
+  segs.push({ x1: 7, y1: 5, x2: 7, y2: 8, kind: "glass" }); // right upper
+  segs.push({ x1: 7, y1: 10, x2: 7, y2: 12, kind: "glass" }); // right lower (door gap)
+  // War Room glass enclosure (front only, open sides).
   segs.push({ x1: 0, y1: 18, x2: 9, y2: 18, kind: "glass" });
-  // Glass front of the Command Center.
-  segs.push({ x1: 14, y1: 18, x2: 26, y2: 18, kind: "glass" });
-  // Vertical divider between Command Center and the labs/finance.
-  segs.push({ x1: 14, y1: 12, x2: 14, y2: 18, kind: "glass" });
-  // Divider between QA Lab and Finance.
-  segs.push({ x1: 7, y1: 18, x2: 14, y2: 18, kind: "glass" });
-  // Divider between Open Workspace and Engineering.
-  segs.push({ x1: 16, y1: 0, x2: 16, y2: 7, kind: "glass" });
-  // Divider between Engineering and Command Center.
-  segs.push({ x1: 16, y1: 7, x2: 30, y2: 7, kind: "glass" });
+  // A single low divider hinting the Command Center zone.
+  segs.push({ x1: 14, y1: 18, x2: 18, y2: 18, kind: "low" });
+  segs.push({ x1: 24, y1: 18, x2: 28, y2: 18, kind: "low" });
   return segs;
 }
 

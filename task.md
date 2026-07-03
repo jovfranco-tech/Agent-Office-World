@@ -207,3 +207,59 @@ This iteration resolved the two problems flagged in v0.1:
   fix this in v0.3.
 - Furniture shapes are CSS — could be upgraded to real isometric sprites.
 - Pet licensing still unvalidated for commercial use (demo only).
+
+---
+
+# v0.3 — Office Realism & Furniture Density Pass
+
+Goal: make the world read unambiguously as an office, not a closed tactical map
+with characters on top.
+
+## What changed (v0.3)
+
+### Walls (the #1 complaint: "dungeon barriers")
+- Introduced a 3-tier wall system (`outer` / `glass` / `low`) and made ALL walls
+  dramatically shorter and thinner. Walls are now a faint edge / subtle glass
+  tint, not a barrier. Outer perimeter is a 2px×5px baseboard; glass partitions
+  are 3px×12px at 40% opacity.
+- Reduced internal partitions to a minimum: only Strategy Room + War Room get a
+  light glass enclosure; everything else flows as one open floor.
+
+### Floor
+- Desaturated all zone colors to a near-uniform dark blue-grey (~#10141f) with
+  only a tiny per-zone hue shift. The office no longer reads as a board of
+  colored regions — zones are now distinguished by FURNITURE, not by paint.
+
+### Furniture (the #2 complaint: "brown boxes")
+- **Composite workstation desks**: a `desk` now renders as ONE unit = desk
+  surface + glowing blue monitor on the back edge + chair in front. This is the
+  key change that makes desks read as workstations.
+- New desk variants: `dual-monitor-desk` (engineering), `laptop-desk`
+  (research). Engineering/security get dual monitors; research gets laptops.
+- New furniture types: `filing-cabinet`, `coffee-machine`, `wall-sign`,
+  `small-divider`, `test-bench`, `floor-lamp`.
+- Brighter, blue-glowing monitors so workstations are immediately recognizable.
+- Denser zone detail: reception now has a branded wall-sign ("AGENT OFFICE"),
+  finance has filing cabinets, break area has a coffee machine, QA has test
+  benches + checklist whiteboard.
+
+## Files modified (v0.3)
+- `src/components/FurnitureLayer.tsx` (composite desks, new types, subtle walls)
+- `src/lib/officeLayout.ts` (3-tier walls, minimal partitions)
+- `src/data/furniture.ts` (zone desk types, new pieces)
+- `src/data/officeZones.ts` (desaturated colors)
+- `src/types.ts` (new furniture types)
+
+## Validation (v0.3)
+- `npx tsc --noEmit` ✅ 0 errors
+- `npm run build` ✅ (CSS 13.5 KB / JS 200 KB gz 62 KB)
+- 21 unique agents, 0 duplicates ✅ (no regression)
+- 68 furniture pieces
+
+## v0.4 candidates
+- True iso depth-sort (walls/agents/furniture by height) instead of z-bands.
+- Replace CSS furniture shapes with real isometric sprite assets.
+- Zoom/pan controls; perimeter wall still slightly visible — could be a faint
+  floor-edge highlight instead of a raised slab.
+- Seated agent poses (z-index behind the desk front edge) for stronger
+  "working at desk" reading.

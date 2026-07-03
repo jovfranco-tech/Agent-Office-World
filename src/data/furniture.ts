@@ -25,22 +25,32 @@ const F = (
   furniture.push({ id: `f-${fid}`, type, x, y, w, h, zone, rot });
 };
 
-// --- Desks + monitors, generated from desk spots ----------------
-// (We deliberately do NOT auto-add chairs: the agent sprite IS the seated
-// person at the sit position. Adding a chair there would overlap the agent.)
+// --- Workstation desks, generated from desk spots ----------------
+// A "desk" renders as a COMPOSITE unit (surface + monitor + chair), so we
+// only emit one desk piece per spot — no separate monitor/chair that would
+// overlap. Engineering pods get dual-monitor desks; QA/finance get regular
+// desks; research gets laptop desks.
+const ZONE_DESK_TYPE: Record<string, Furniture["type"]> = {
+  "engineering-pods": "dual-monitor-desk",
+  "qa-lab": "desk",
+  "finance-desk": "desk",
+  "research-library": "laptop-desk",
+  "open-workspace": "desk",
+  "security-desk": "dual-monitor-desk",
+};
 for (const spot of DESK_SPOTS) {
-  // The desk surface
-  F("desk", spot.desk.x, spot.desk.y, spot.desk.w, spot.desk.h, spot.zone);
-  // A monitor on the back edge of the desk (agent faces it while seated)
-  F("monitor", spot.desk.x + (spot.desk.w > 1 ? 0 : 0), spot.desk.y, 1, 1, spot.zone);
+  const dt = ZONE_DESK_TYPE[spot.zone] ?? "desk";
+  F(dt, spot.desk.x, spot.desk.y, spot.desk.w, spot.desk.h, spot.zone);
 }
 
 // --- Reception -----------------------------------------------------------
-F("reception-desk", 2, 1, 3, 1, "reception"); // (overlap with desk-rec-1 is fine, drawn on top)
+// (desk-rec-1 already provides the reception workstation; here we add the
+// branded sign, waiting sofa and greenery so it reads as a lobby.)
+F("wall-sign", 3, 0, 3, 1, "reception");
 F("sofa", 1, 3, 2, 1, "reception");
 F("plant", 5, 1, 1, 1, "reception");
 F("plant", 1, 4, 1, 1, "reception");
-F("lamp", 6, 3, 1, 1, "reception");
+F("floor-lamp", 6, 3, 1, 1, "reception");
 F("rug", 2, 3, 3, 1, "reception");
 
 // --- Open Workspace extras ----------------------------------------------
@@ -81,15 +91,19 @@ F("whiteboard", 8, 19, 1, 2, "war-room");
 F("chair", 3, 21, 1, 1, "war-room");
 F("chair", 6, 21, 1, 1, "war-room");
 
-// --- QA Lab extras ------------------------------------------------------
-F("server-rack", 12, 16, 1, 1, "qa-lab");
-F("plant", 8, 16, 1, 1, "qa-lab");
-F("lamp", 11, 13, 1, 1, "qa-lab");
+// --- QA Lab extras (test benches + checklist board) ----------------------
+F("test-bench", 8, 16, 1, 1, "qa-lab");
+F("test-bench", 11, 16, 1, 1, "qa-lab");
+F("whiteboard", 12, 13, 1, 2, "qa-lab");
+F("plant", 8, 13, 1, 1, "qa-lab");
+F("floor-lamp", 11, 13, 1, 1, "qa-lab");
 
-// --- Finance Desk extras ------------------------------------------------
-F("plant", 12, 22, 1, 1, "finance-desk");
-F("lamp", 8, 19, 1, 1, "finance-desk");
-F("bookshelf", 8, 22, 2, 1, "finance-desk");
+// --- Finance Desk extras (filing cabinets + formal) ----------------------
+F("filing-cabinet", 12, 22, 1, 1, "finance-desk");
+F("filing-cabinet", 13, 22, 1, 1, "finance-desk");
+F("plant", 8, 22, 1, 1, "finance-desk");
+F("floor-lamp", 8, 19, 1, 1, "finance-desk");
+F("bookshelf", 8, 22, 1, 1, "finance-desk");
 
 // --- Command Center Wall (a wall of screens) ----------------------------
 for (let i = 0; i < 8; i++) {
@@ -106,11 +120,13 @@ F("coffee-table", 18, 20, 2, 1, "client-success");
 F("plant", 20, 19, 1, 1, "client-success");
 F("lamp", 16, 19, 1, 1, "client-success");
 
-// --- Break Area ---------------------------------------------------------
+// --- Break Area (sofa + coffee machine + snack) -------------------------
 F("sofa", 23, 19, 2, 1, "break-area");
 F("coffee-table", 23, 21, 2, 1, "break-area");
+F("coffee-machine", 22, 19, 1, 1, "break-area");
 F("plant", 24, 22, 1, 1, "break-area");
-F("plant", 22, 19, 1, 1, "break-area");
+F("plant", 22, 22, 1, 1, "break-area");
+F("floor-lamp", 25, 20, 1, 1, "break-area");
 
 // --- Security Desk extras -----------------------------------------------
 F("server-rack", 28, 19, 1, 2, "security-desk");

@@ -74,6 +74,9 @@ export interface OfficeZone {
 
 export type FurnitureType =
   | "desk"
+  | "dual-monitor-desk"
+  | "laptop-desk"
+  | "reception-desk"
   | "chair"
   | "monitor"
   | "whiteboard"
@@ -82,10 +85,15 @@ export type FurnitureType =
   | "server-rack"
   | "command-screen"
   | "sofa"
-  | "reception-desk"
   | "bookshelf"
   | "lamp"
+  | "floor-lamp"
   | "coffee-table"
+  | "filing-cabinet"
+  | "coffee-machine"
+  | "wall-sign"
+  | "small-divider"
+  | "test-bench"
   | "rug";
 
 export interface Furniture {

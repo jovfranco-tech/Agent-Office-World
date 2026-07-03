@@ -30,7 +30,13 @@ interface Props {
   originY: number;
 }
 
-/** Render a wall segment as a tall extruded isometric slab along its grid line. */
+/**
+ * Render a wall segment. v0.3: walls are deliberately LOW and light so they
+ * read as subtle office enclosure / glass partitions, NOT dungeon barriers.
+ *   - outer : thin low baseboard along the building edge
+ *   - glass : translucent short partition with a faint frame
+ *   - low   : a very low planter-style divider
+ */
 function WallSlab({
   seg,
   tile,
@@ -42,9 +48,6 @@ function WallSlab({
   originX: number;
   originY: number;
 }) {
-  // The wall runs from grid (x1,y1) to (x2,y2). Compute both endpoints in
-  // screen space and draw a thick, tall slab between them so it reads as a
-  // real wall (not a flat line).
   const a = gridToScreen(seg.x1, seg.y1, tile);
   const b = gridToScreen(seg.x2, seg.y2, tile);
   const ax = a.x - originX;
@@ -55,12 +58,17 @@ function WallSlab({
   const dy = by - ay;
   const len = Math.hypot(dx, dy) || 1;
   const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-  const isGlass = seg.kind === "glass";
-  // Make walls substantial: thick footprint + real height.
-  const thickness = isGlass ? 7 : 12;
-  const wallHeight = isGlass ? 26 : 52; // px of "wall" rising above the floor
-  // Walls render above the floor/zone tint but below agents.
   const depthKey = Math.min(seg.x1, seg.x2) + Math.min(seg.y1, seg.y2);
+
+  // Per-tier visual weight. Walls are deliberately VERY subtle — just a faint
+  // edge / glass tint, never a barrier. The office must read as open space.
+  const tiers = {
+    outer: { thickness: 2, height: 5, opacity: 0.7 },
+    glass: { thickness: 3, height: 12, opacity: 0.4 },
+    low: { thickness: 4, height: 6, opacity: 0.85 },
+  } as const;
+  const t = tiers[seg.kind];
+  const isGlass = seg.kind === "glass";
 
   return (
     <div
@@ -69,42 +77,35 @@ function WallSlab({
         left: ax,
         top: ay,
         width: len,
-        height: thickness,
+        height: t.thickness,
         transform: `rotate(${angle}deg)`,
         transformOrigin: "0 50%",
-        zIndex: 200 + depthKey, // above floor (z<200), below agents (z>=1000)
+        zIndex: 200 + depthKey,
         pointerEvents: "none",
       }}
     >
-      {/* Upright wall face — rises UPWARD from the floor line. The slab's own
-          box is the wall's footprint on the floor; this child sits on top of
-          it and grows upward (bottom anchored at the footprint, height above). */}
       <div
         style={{
           position: "absolute",
           left: 0,
           bottom: "100%",
           width: "100%",
-          height: wallHeight,
+          height: t.height,
           background: isGlass
-            ? "linear-gradient(180deg, rgba(170,215,255,0.55) 0%, rgba(120,170,230,0.3) 100%)"
-            : "linear-gradient(180deg, #3a4d78 0%, #1e2740 100%)",
+            ? "linear-gradient(180deg, rgba(170,215,255,0.45) 0%, rgba(120,170,230,0.22) 100%)"
+            : seg.kind === "low"
+            ? "linear-gradient(180deg, #2a3a52 0%, #1a2438 100%)"
+            : "linear-gradient(180deg, #2a3550 0%, #161e30 100%)",
           borderTop: isGlass
-            ? "2px solid rgba(200,230,255,0.9)"
-            : "2px solid #52678f",
-          borderLeft: isGlass
-            ? "1px solid rgba(200,230,255,0.45)"
-            : "1px solid #2c3858",
-          borderRight: isGlass
-            ? "1px solid rgba(200,230,255,0.2)"
-            : "1px solid #141b30",
+            ? "1px solid rgba(200,230,255,0.7)"
+            : `1px solid ${seg.kind === "low" ? "#3a4d6a" : "#33415e"}`,
           boxShadow: isGlass
-            ? "0 0 12px rgba(150,200,255,0.35), inset 0 0 14px rgba(180,220,255,0.18)"
-            : "0 8px 16px rgba(0,0,0,0.65)",
-          opacity: isGlass ? 0.8 : 1,
+            ? "0 0 6px rgba(150,200,255,0.25)"
+            : "0 3px 6px rgba(0,0,0,0.45)",
+          opacity: t.opacity,
+          borderRadius: seg.kind === "low" ? 2 : 0,
         }}
       />
-      {/* Glass mullion lines for partitions */}
       {isGlass && (
         <div
           style={{
@@ -112,10 +113,9 @@ function WallSlab({
             left: 0,
             bottom: "100%",
             width: "100%",
-            height: wallHeight,
-            backgroundImage:
-              "repeating-linear-gradient(90deg, transparent 0 36px, rgba(200,230,255,0.5) 36px 38px)",
-            opacity: 0.55,
+            height: t.height,
+            borderTop: "1px solid rgba(200,230,255,0.35)",
+            borderLeft: "1px solid rgba(200,230,255,0.18)",
           }}
         />
       )}
@@ -137,23 +137,118 @@ function Shape({
   const baseH = tile.h * Math.max(1, span) * 0.7;
 
   switch (type) {
+    // ---- COMPOSITE WORKSTATION DESKS -------------------------------------
+    // A desk renders as ONE unit: surface + monitor on the back edge + a
+    // chair in front. This is what makes the office read as an office.
     case "desk":
+    case "laptop-desk":
+    case "dual-monitor-desk": {
+      const dual = type === "dual-monitor-desk";
+      const laptop = type === "laptop-desk";
+      const monCount = dual ? 2 : 1;
+      return (
+        <div style={{ position: "relative", width: baseW, height: baseH }}>
+          {/* chair (behind desk surface in z, drawn first = appears in front of desk front edge) */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "78%",
+              width: baseW * 0.4,
+              height: baseH * 0.55,
+              transform: "translate(-50%, -50%)",
+              background: "#1f2c44",
+              borderRadius: "45% 45% 30% 30%",
+              border: "1px solid rgba(150,180,230,0.25)",
+              boxShadow: "0 2px 3px rgba(0,0,0,0.4)",
+            }}
+          />
+          {/* desk surface */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: baseW,
+              height: baseH,
+              transform: "translate(-50%, -50%)",
+              background: "linear-gradient(180deg,#3a4763,#222d44)",
+              borderRadius: 4,
+              border: "1px solid rgba(150,180,230,0.3)",
+              boxShadow: "0 4px 7px rgba(0,0,0,0.5)",
+            }}
+          />
+          {/* monitor(s) on the back edge — glowing blue so workstations read clearly */}
+          {Array.from({ length: monCount }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: `${dual ? (i === 0 ? 30 : 70) : 50}%`,
+                top: "8%",
+                width: laptop ? baseW * 0.42 : baseW * 0.52,
+                height: baseH * 1.0,
+                transform: "translate(-50%, -50%)",
+                background: laptop
+                  ? "linear-gradient(180deg,#cbd5e1,#64748b)"
+                  : "linear-gradient(180deg,#0a1f3a,#061427)",
+                border: laptop
+                  ? "1px solid #94a3b8"
+                  : "2px solid #2563eb",
+                borderRadius: laptop ? 2 : 3,
+                boxShadow: laptop
+                  ? "0 2px 3px rgba(0,0,0,0.5)"
+                  : "0 0 8px rgba(59,130,246,0.65), 0 2px 3px rgba(0,0,0,0.5)",
+                overflow: "hidden",
+              }}
+            >
+              {!laptop && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 2,
+                    background:
+                      "repeating-linear-gradient(180deg, rgba(96,165,250,0.45) 0 2px, transparent 2px 4px)",
+                  }}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      );
+    }
     case "reception-desk":
       return (
-        <div
-          style={{
-            width: baseW,
-            height: baseH,
-            transform: "translate(-50%, -50%)",
-            background:
-              type === "reception-desk"
-                ? "linear-gradient(180deg,#44557a,#2a3753)"
-                : "linear-gradient(180deg,#33415e,#1e2942)",
-            borderRadius: 4,
-            border: "1px solid rgba(150,180,230,0.28)",
-            boxShadow: "0 5px 9px rgba(0,0,0,0.45)",
-          }}
-        />
+        <div style={{ position: "relative", width: baseW * 1.1, height: baseH }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              transform: "translate(0, 0)",
+              background: "linear-gradient(180deg,#4a5d82,#2c3a58)",
+              borderRadius: 6,
+              border: "1px solid rgba(170,195,235,0.35)",
+              boxShadow: "0 5px 9px rgba(0,0,0,0.5)",
+            }}
+          />
+          {/* "Agent Office World" sign strip on the front */}
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "55%",
+              transform: "translateX(-50%)",
+              fontSize: Math.max(7, baseW * 0.13),
+              fontWeight: 800,
+              letterSpacing: "0.05em",
+              color: "#bfdbfe",
+              textShadow: "0 1px 2px rgba(0,0,0,0.6)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            AGENT OFFICE
+          </div>
+        </div>
       );
     case "monitor":
     case "command-screen":
@@ -372,7 +467,156 @@ function Shape({
           )}
         </div>
       );
+    case "filing-cabinet":
+      return (
+        <div
+          style={{
+            position: "relative",
+            width: baseW * 0.45,
+            height: baseH * 1.25,
+            transform: "translate(-50%, -75%)",
+            background: "linear-gradient(180deg,#5b6b86,#33415c)",
+            border: "1px solid #7b8ba8",
+            borderRadius: 3,
+            boxShadow: "0 4px 6px rgba(0,0,0,0.45)",
+            overflow: "hidden",
+          }}
+        >
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                left: 2,
+                right: 2,
+                top: 3 + i * (baseH * 0.4),
+                height: 2,
+                background: "#2a3550",
+              }}
+            />
+          ))}
+        </div>
+      );
+    case "coffee-machine":
+      return (
+        <div
+          style={{
+            position: "relative",
+            width: baseW * 0.45,
+            height: baseH * 0.9,
+            transform: "translate(-50%, -72%)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: "linear-gradient(180deg,#1e293b,#0f172a)",
+              border: "1px solid #475569",
+              borderRadius: 3,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "30%",
+              transform: "translateX(-50%)",
+              width: "50%",
+              height: "30%",
+              background: "#334155",
+              borderRadius: 2,
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: "50%",
+              bottom: "12%",
+              transform: "translateX(-50%)",
+              width: 4,
+              height: 4,
+              borderRadius: "50%",
+              background: "#ef4444",
+              boxShadow: "0 0 4px #ef4444",
+            }}
+          />
+        </div>
+      );
+    case "wall-sign":
+      return (
+        <div
+          style={{
+            width: baseW * 0.9,
+            height: baseH * 0.6,
+            transform: "translate(-50%, -90%)",
+            background: "linear-gradient(180deg,#1e3a8a,#172554)",
+            border: "1px solid #3b82f6",
+            borderRadius: 4,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: Math.max(6, baseW * 0.11),
+            fontWeight: 800,
+            color: "#bfdbfe",
+            letterSpacing: "0.06em",
+            boxShadow: "0 0 8px rgba(59,130,246,0.4)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          AGENT OFFICE
+        </div>
+      );
+    case "small-divider":
+      return (
+        <div
+          style={{
+            width: baseW * 0.9,
+            height: baseH * 0.5,
+            transform: "translate(-50%, -60%)",
+            background: "linear-gradient(180deg, rgba(150,200,255,0.3), rgba(120,170,230,0.15))",
+            border: "1px solid rgba(200,230,255,0.4)",
+            borderRadius: 3,
+            opacity: 0.6,
+          }}
+        />
+      );
+    case "test-bench":
+      return (
+        <div style={{ position: "relative", width: baseW, height: baseH }}>
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              transform: "translate(-50%,-50%)",
+              left: "50%",
+              top: "50%",
+              width: baseW,
+              height: baseH,
+              background: "linear-gradient(180deg,#2a3a2a,#1a2418)",
+              border: "1px solid #4a6a3a",
+              borderRadius: 4,
+              boxShadow: "0 4px 6px rgba(0,0,0,0.45)",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              left: "30%",
+              top: "20%",
+              width: baseW * 0.35,
+              height: baseH * 0.7,
+              transform: "translate(-50%,-50%)",
+              background: "#0a1f3a",
+              border: "1px solid #22d3ee",
+              borderRadius: 2,
+              boxShadow: "0 0 5px rgba(34,211,238,0.5)",
+            }}
+          />
+        </div>
+      );
     case "lamp":
+    case "floor-lamp":
       return (
         <div
           style={{
@@ -445,9 +689,9 @@ function Shape({
             height: baseH * 1.6,
             transform: "translate(-50%, -50%)",
             background:
-              "repeating-linear-gradient(45deg, rgba(120,90,60,0.25) 0 6px, rgba(90,60,40,0.25) 6px 12px)",
+              "repeating-linear-gradient(45deg, rgba(120,90,60,0.18) 0 6px, rgba(90,60,40,0.18) 6px 12px)",
             borderRadius: 8,
-            opacity: 0.6,
+            opacity: 0.5,
           }}
         />
       );
