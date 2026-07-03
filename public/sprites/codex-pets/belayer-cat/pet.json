@@ -1,0 +1,9 @@
+{
+  "id": "belayer-cat",
+  "displayName": "Belayer Cat",
+  "description": "A vigilant black-and-white cat kitted out with a belay device and harness, keeping a watchful eye on every climb.",
+  "spritesheetPath": "spritesheet.webp",
+  "kind": "animal",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/belayer-cat-7fa042c8b542/sprite.webp"
+}

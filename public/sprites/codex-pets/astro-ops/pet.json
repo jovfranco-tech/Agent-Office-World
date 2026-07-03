@@ -1,0 +1,8 @@
+{
+  "id": "astro-ops",
+  "displayName": "Astro Ops",
+  "description": "统一 3D 风格 Astro Ops：真人感蓝白战衣角色，拖动时侧身奔跑并弹出中文气泡。",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/astro-ops-ed77c4f7fee4/sprite.webp"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "paperclip",
+  "displayName": "Paperclip",
+  "description": "A tiny friendly office paperclip assistant for calm document-editing days.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/paperclip-1a328da89a37/sprite.webp"
+}

@@ -1,0 +1,8 @@
+{
+  "id": "boba",
+  "displayName": "Boba",
+  "description": "A tiny otter sipping bubble tea while keeping you company in Codex.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (curated)",
+  "originUrl": "https://assets.petdex.dev/curated/boba/spritesheet.webp"
+}

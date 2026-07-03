@@ -1,0 +1,8 @@
+{
+  "id": "ostrom",
+  "displayName": "Ostrom",
+  "description": "A tiny Elinor Ostrom-inspired commons governance scholar companion.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/ostrom-f2fc9b9dd7c2/sprite.webp"
+}

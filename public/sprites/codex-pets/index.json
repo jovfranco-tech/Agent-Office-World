@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-07-02T22:52:57.429Z",
+  "source": "petdex (https://petdex.dev)",
+  "licenseNote": "Pet assets are owned by their submitters. Demo/local use only until per-pet commercial licensing is validated.",
+  "pets": [
+    {
+      "slug": "boba"
+    },
+    {
+      "slug": "tabby"
+    },
+    {
+      "slug": "belayer-cat"
+    },
+    {
+      "slug": "glitchcat"
+    },
+    {
+      "slug": "heimerdinger"
+    },
+    {
+      "slug": "astro-ops"
+    },
+    {
+      "slug": "chefito"
+    },
+    {
+      "slug": "bytechomp-v2"
+    },
+    {
+      "slug": "ostrom"
+    },
+    {
+      "slug": "humboldt"
+    },
+    {
+      "slug": "paperclip"
+    },
+    {
+      "slug": "dylan-harper"
+    },
+    {
+      "slug": "guan-miao"
+    },
+    {
+      "slug": "maisenpai"
+    }
+  ]
+}

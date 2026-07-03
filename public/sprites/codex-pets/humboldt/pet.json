@@ -1,0 +1,8 @@
+{
+  "id": "humboldt",
+  "displayName": "Humboldt",
+  "description": "A tiny Alexander von Humboldt-inspired naturalist explorer companion.",
+  "spritesheetPath": "spritesheet.webp",
+  "source": "petdex (manifest)",
+  "originUrl": "https://assets.petdex.dev/pets/humboldt-341035322f9c/sprite.webp"
+}
