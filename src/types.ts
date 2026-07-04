@@ -157,6 +157,8 @@ export interface Agent {
   activityUntil?: number;
   /** Anchor id the agent is heading to / occupying. */
   anchorId?: string;
+  /** Waypoints (grid space) the agent walks through to reach gridX/gridY. */
+  path?: { x: number; y: number }[];
 }
 
 export interface OfficeEvent {

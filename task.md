@@ -450,3 +450,68 @@ desks, join meetings, and show activity effects. Not just data changes.
 - Seated agent z-index (sprite visually behind desk front-edge).
 - More activity effects (typing dots animation, pulse ring under active agent).
 - Activity-driven monitor glow (nearby monitor lights up when an agent works).
+
+---
+
+# v0.7 — Smooth Movement (kill the teleport)
+
+Goal: agents must WALK smoothly between positions, never teleport.
+
+## Why they teleported in v0.6 (root cause)
+Two compounding bugs:
+1. **In-place mutation of snapshot objects**: the rAF loop mutated
+   `renderX/renderY` directly on agent objects, but every Live tick replaced
+   the agents array with brand-new spread-copied objects. The in-flight
+   interpolation state lived on objects that got discarded, so positions reset.
+2. **React.memo blocked re-renders**: AgentSprite was memoized; OfficeWorld
+   re-rendered every frame, but passed the SAME agent object reference, so memo
+   skipped AgentSprite — its DOM position never updated mid-move, then snapped
+   to the final position when the array was replaced = teleport.
+
+## The fix (v0.7)
+- **Persistent `AgentMotionStore`** (class, owned by OfficeWorld via a ref).
+  Movement/visual state lives here, keyed by agent id, and survives React
+  snapshots. The store owns renderX/renderY, path, progress, facing, isMoving.
+- **Decoupled targets from rendering**: the snapshot only provides target
+  gridX/gridY (+ optional waypoints). The store detects new targets and starts
+  a move from the CURRENT rendered position.
+- **easeInOutCubic interpolation** over a duration proportional to distance
+  (280ms/cell, clamped 450ms–4s). Far moves take visibly longer; short moves
+  are snappy. Verified: a 5-cell move = 42 frames, max per-frame jump 0.34
+  cells (vs 5 total) = perfectly smooth, NO teleport.
+- **`frame` prop busts memo**: OfficeWorld passes a monotonic frame counter to
+  AgentSprite; the custom memo comparator re-renders whenever frame changes, so
+  the DOM position updates every frame while moving.
+- **Waypoints**: long moves (>6 cells) route through a corridor midpoint so
+  agents don't cut straight across the office.
+- Disabled the old simulation's direct gridX/gridY movement (step 3 + 5) —
+  only scheduleActivities() + the motion store control position now.
+
+## Walk cycle
+Codex Pets DO have a real run/walk row (atlas row 7, "running", 6 frames,
+820ms loop). When `walking=true`, CodexPetSprite switches to that row + the
+`.pet-walking` CSS bob. So agents have a genuine animated walk cycle, not just
+bobbing. (Documented: this is a "run" cycle; no dedicated slow-walk row exists
+in the Codex Pets atlas.)
+
+## Files modified (v0.7)
+- `src/lib/agentMovement.ts` — rewritten: AgentMotionStore class, easeInOutCubic,
+  waypoint routing, scheduleActivities (sets agent.path).
+- `src/components/OfficeWorld.tsx` — owns the store, rAF steps it, frame counter.
+- `src/components/AgentSprite.tsx` — reads motion from store, frame-busted memo.
+- `src/components/AgentInspector.tsx` — grid pos / target zone / anchor.
+- `src/lib/simulation.ts` — removed conflicting direct-position movement.
+- `src/types.ts` — added agent.path field.
+
+## Validation (v0.7)
+- `npx tsc --noEmit` ✅ 0 errors
+- `npm run build` ✅ (JS 211 KB gz 65 KB)
+- Motion smoothness test ✅ (5-cell move: 42 frames, max jump 0.34 cells, no teleport)
+- 21 unique agents, 0 duplicates, 0 missing sprites ✅
+- DOM dump confirms 22 pet-sprite elements render ✅
+
+## v0.8 candidates
+- Full pathfinding (A* through corridors) instead of single midpoint waypoint.
+- Real walk sprites with 4 directions (current run row is side-view only).
+- Visual step particles / footstep puffs while walking.
+- Seated agent z-index behind desk front-edge.

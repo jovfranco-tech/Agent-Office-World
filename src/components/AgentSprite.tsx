@@ -1,16 +1,15 @@
 /**
- * AgentSprite — v0.6.
+ * AgentSprite — v0.7 (no-teleport).
  *
- * Positions an agent using its INTERPOLATED render position (renderX/renderY)
- * so movement is smooth. Passes movement + activity signals to CodexPetSprite
- * so the walk animation, facing, and activity effects all reflect real motion.
- *
- * NOTE: no CSS transition on left/top — the rAF loop in OfficeWorld updates
- * renderX/renderY every frame, so the DOM position is already smooth. Adding a
- * transition here would lag/double-smooth the motion.
+ * Reads its interpolated position from a persistent AgentMotion object
+ * (owned by OfficeWorld's store), NOT from the React snapshot. The `frame`
+ * prop changes every animation frame while the office is moving, which busts
+ * React.memo so this component re-renders and its DOM position updates each
+ * frame — this is what makes motion visible instead of teleporting.
  */
 import { memo } from "react";
 import type { Agent } from "../types";
+import type { AgentMotion } from "../lib/agentMovement";
 import CodexPetSprite from "./CodexPetSprite";
 import { DEFAULT_TILE, gridCenterToScreen, type TileSize } from "../lib/isometric";
 import { animationForState } from "../lib/agentStateAnimation";
@@ -19,6 +18,9 @@ import { activityForState } from "../lib/agentMovement";
 
 interface Props {
   agent: Agent;
+  motion?: AgentMotion;
+  /** Monotonic frame counter; changes every frame while moving (busts memo). */
+  frame: number;
   tile?: TileSize;
   originX: number;
   originY: number;
@@ -31,6 +33,8 @@ interface Props {
 
 function AgentSpriteImpl({
   agent,
+  motion,
+  frame: _frame,
   tile = DEFAULT_TILE,
   originX,
   originY,
@@ -40,17 +44,21 @@ function AgentSpriteImpl({
   showLabels,
   onSelect,
 }: Props) {
-  // Render at the interpolated position (smoothed each frame by the rAF loop).
-  const pos = gridCenterToScreen(agent.renderX, agent.renderY, tile);
+  // Render position comes from the motion store (interpolated), falling back
+  // to the agent's logical grid position if motion isn't tracked yet.
+  const rx = motion?.renderX ?? agent.gridX;
+  const ry = motion?.renderY ?? agent.gridY;
+  const pos = gridCenterToScreen(rx, ry, tile);
   const left = pos.x - originX;
   const top = pos.y - originY;
-  const depth = Math.round(agent.renderX + agent.renderY);
+  const depth = Math.round(rx + ry);
   const mapping = getAgentPet(agent.id);
   const accent = mapping?.accent ?? "#3b82f6";
   const animation = agent.animationOverride ?? animationForState(agent.state);
   const agentScale = mapping?.scale ?? 1;
   const activity = agent.activity ?? activityForState(agent.state);
-  const isMoving = agent.isMoving === true;
+  const isMoving = motion?.isMoving === true;
+  const facing = motion?.facing ?? agent.facing ?? "right";
 
   return (
     <div
@@ -68,14 +76,16 @@ function AgentSpriteImpl({
         cursor: "pointer",
         opacity: isDimmed ? 0.32 : 1,
         transition: "opacity 180ms ease",
+        // No transition on left/top: position is set fresh every frame by the
+        // rAF loop, so a CSS transition would fight the interpolation.
       }}
-      title={`${agent.name} — ${agent.role} (${agent.state}${isMoving ? ", moving" : ""})`}
+      title={`${agent.name} — ${agent.role} (${agent.state}${isMoving ? ", walking" : ""})`}
     >
       <CodexPetSprite
         petSlug={agent.petSlug}
         state={animation}
         size={size}
-        direction={agent.facing ?? "right"}
+        direction={facing}
         isSelected={isSelected}
         walking={isMoving}
         accent={accent}
@@ -100,5 +110,18 @@ function AgentSpriteImpl({
   );
 }
 
-export const AgentSprite = memo(AgentSpriteImpl);
+// memo with a custom comparator: re-render whenever frame, isSelected, motion
+// identity, or key business fields change. The `frame` prop is the critical
+// one — it bumps every animation frame so the DOM position updates smoothly.
+export const AgentSprite = memo(AgentSpriteImpl, (prev, next) => {
+  return (
+    prev.frame === next.frame &&
+    prev.isSelected === next.isSelected &&
+    prev.isDimmed === next.isDimmed &&
+    prev.showLabels === next.showLabels &&
+    prev.size === next.size &&
+    prev.motion === next.motion &&
+    prev.agent === next.agent
+  );
+});
 export default AgentSprite;

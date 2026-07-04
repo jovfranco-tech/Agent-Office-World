@@ -133,13 +133,16 @@ export default function AgentInspector({ agent, onClose }: Props) {
       <Row label="Activity">
         <span style={{ fontSize: 11.5 }}>{agent.activity ?? "—"}</span>
       </Row>
-      <Row label="Moving">
-        <span style={{ fontSize: 11.5, color: agent.isMoving ? "#22c55e" : "var(--text-muted)" }}>
-          {agent.isMoving ? "● walking" : "○ stationary"}
-        </span>
+      <Row label="Grid pos">
+        <code style={{ fontSize: 11 }}>
+          ({agent.gridX}, {agent.gridY})
+        </code>
       </Row>
-      <Row label="Facing">
-        <span style={{ fontSize: 11.5 }}>{agent.facing ?? "right"}</span>
+      <Row label="Target zone">{zone?.name ?? agent.zone}</Row>
+      <Row label="Anchor">
+        <code style={{ fontSize: 10, color: "var(--text-muted)" }}>
+          {agent.anchorId ?? "—"}
+        </code>
       </Row>
       <Row label="Pet">
         <span style={{ fontSize: 11.5 }}>

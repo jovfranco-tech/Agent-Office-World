@@ -1,18 +1,15 @@
 /**
- * OfficeWorld — the main isometric office view. (v0.6: smooth agent movement)
+ * OfficeWorld — the main isometric office view. (v0.7: smooth, no-teleport motion)
  *
- * Composes: floor + zones + furniture + agents, with:
- *   - responsive auto-scaling to fit the viewport
- *   - depth sorting (z-index = renderX + renderY)
- *   - agent selection + zone selection
- *   - role/state filters (dim non-matching agents)
- *   - a requestAnimationFrame loop that interpolates each agent's render
- *     position toward its grid target, so movement is visibly smooth.
+ * Movement/visual state lives in a PERSISTENT AgentMotionStore owned here via a
+ * ref. It survives React snapshots (which only carry target grid positions).
+ * Every frame the rAF loop steps the store with easeInOutCubic interpolation;
+ * while anyone is moving, OfficeWorld re-renders and passes a fresh `frame`
+ * value + the agent's interpolated render position to AgentSprite.
  *
- * The rAF loop mutates the agent objects' renderX/renderY in place (the agents
- * array is owned by App and passed down; we treat the per-agent visual fields
- * as mutable render state). A frame counter forces re-renders at ~33fps so the
- * DOM positions update every frame.
+ * This is the fix for the v0.6 teleport: motion no longer mutates snapshot
+ * objects (which were replaced every tick), and AgentSprite re-renders every
+ * frame via the `frame` prop so memo can't skip it.
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Agent, OfficeZone, AgentRole, AgentState } from "../types";
@@ -20,7 +17,7 @@ import OfficeFloor, { computeSceneBounds } from "./OfficeFloor";
 import FurnitureLayer from "./FurnitureLayer";
 import AgentSprite from "./AgentSprite";
 import { DEFAULT_TILE, type TileSize } from "../lib/isometric";
-import { stepMovement } from "../lib/agentMovement";
+import { AgentMotionStore } from "../lib/agentMovement";
 
 interface Props {
   agents: Agent[];
@@ -50,7 +47,38 @@ export default function OfficeWorld({
   const bounds = useMemo(() => computeSceneBounds(tile), [tile]);
   const { originX, originY, width, height } = bounds;
 
-  // Responsive scaling: fit the scene inside the viewport with padding.
+  // Persistent motion store — survives across renders/snapshots.
+  const storeRef = useRef<AgentMotionStore | null>(null);
+  if (storeRef.current === null) storeRef.current = new AgentMotionStore();
+  const store = storeRef.current;
+
+  // Keep a ref to the latest agents so the rAF closure reads current data.
+  const agentsRef = useRef(agents);
+  agentsRef.current = agents;
+
+  // Sync the store with the latest snapshot (adopts new targets) every render.
+  store.sync(agents, Date.now());
+
+  // Frame counter for re-renders (also passed to AgentSprite to bust memo).
+  const [frame, setFrame] = useState(0);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    function loop() {
+      const now = Date.now();
+      store.step(now);
+      if (store.anyMoving()) {
+        setFrame((f) => (f + 1) % 1000000);
+      }
+      rafRef.current = requestAnimationFrame(loop);
+    }
+    rafRef.current = requestAnimationFrame(loop);
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [store]);
+
+  // Responsive scaling.
   useLayoutEffect(() => {
     function fit() {
       const el = stageRef.current;
@@ -66,49 +94,19 @@ export default function OfficeWorld({
     return () => window.removeEventListener("resize", fit);
   }, [width, height]);
 
-  // ---- Movement loop: interpolate render positions every frame ------------
-  // We keep a stable ref to the latest agents so the rAF closure always reads
-  // current data without re-subscribing each render.
-  const agentsRef = useRef(agents);
-  agentsRef.current = agents;
-  const [, setFrame] = useState(0);
-  const lastTs = useRef<number | null>(null);
-  const rafRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    function loop(ts: number) {
-      if (lastTs.current === null) lastTs.current = ts;
-      const dt = Math.min(0.05, (ts - lastTs.current) / 1000); // clamp dt
-      lastTs.current = ts;
-      // Step the visual movement. Only re-render if something actually moved
-      // (avoids burning a frame when the office is fully still).
-      const before = agentsRef.current.some((a) => a.isMoving);
-      stepMovement(agentsRef.current, dt);
-      const after = agentsRef.current.some((a) => a.isMoving);
-      if (before || after) {
-        setFrame((f) => (f + 1) % 1000000);
-      }
-      rafRef.current = requestAnimationFrame(loop);
-    }
-    rafRef.current = requestAnimationFrame(loop);
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-      lastTs.current = null;
-    };
-  }, []);
-
-  // Agents sorted back-to-front by RENDER position for painter's algorithm.
-  const sortedAgents = useMemo(
-    () =>
-      [...agents].sort(
-        (a, b) => a.renderX + a.renderY - (b.renderX + b.renderY)
-      ),
-    // Re-sort whenever agents identity changes OR a frame advanced.
+  // Agents sorted back-to-front by their RENDERED position (painter's algorithm).
+  const sortedAgents = useMemo(() => {
+    return [...agents].sort((a, b) => {
+      const ma = store.get(a.id);
+      const mb = store.get(b.id);
+      const ay = ma ? ma.renderX + ma.renderY : a.gridX + a.gridY;
+      const by = mb ? mb.renderX + mb.renderY : b.gridX + b.gridY;
+      return ay - by;
+    });
+    // Re-sort every frame while moving.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [agents]
-  );
+  }, [agents, frame]);
 
-  // Clicking empty floor deselects everything.
   function handleStageClick() {
     onSelectZone(null);
   }
@@ -154,10 +152,13 @@ export default function OfficeWorld({
             (!stateFilter || agent.state === stateFilter);
           const isDimmed =
             (roleFilter !== null || stateFilter !== null) && !matchesFilter;
+          const motion = store.get(agent.id);
           return (
             <AgentSprite
               key={agent.id}
               agent={agent}
+              motion={motion}
+              frame={frame}
               tile={tile}
               originX={originX}
               originY={originY}

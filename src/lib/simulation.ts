@@ -14,25 +14,6 @@ import type { Agent, AgentState, OfficeEvent } from "../types";
 import { INITIAL_AGENTS } from "../data/agents";
 import { EVENT_TEMPLATES } from "../data/events";
 import { getZone } from "../data/officeZones";
-import { DESK_SPOTS, STAND_SPOTS } from "./officeLayout";
-
-/** All sitting/standing positions available in a given zone (free of other agents). */
-function freeSpotsInZone(
-  zoneId: string,
-  agents: Agent[],
-  selfIndex: number
-): { x: number; y: number }[] {
-  const desk = DESK_SPOTS.filter((d) => d.zone === zoneId).map((d) => d.sit);
-  const stand = STAND_SPOTS.filter((s) => s.zone === zoneId).map((s) => s.pos);
-  const all = [...desk, ...stand];
-  return all.filter(
-    (c) =>
-      !agents.some(
-        (other, oi) =>
-          oi !== selfIndex && other.gridX === c.x && other.gridY === c.y
-      )
-  );
-}
 
 let eventCounter = 0;
 function nextEventId(): string {
@@ -139,16 +120,9 @@ export function tick(
       if (tasks) agent.task = pick(tasks);
     }
 
-    // 3) Maybe move to another spot within the current zone (walking to a
-    //    different desk / standing spot — never a random cell on furniture).
-    if (Math.random() < 0.35) {
-      const free = freeSpotsInZone(agent.zone, agents, i);
-      if (free.length) {
-        const c = pick(free);
-        agent.gridX = c.x;
-        agent.gridY = c.y;
-      }
-    }
+    // 3) Position movement is now owned by scheduleActivities() (anchor-based,
+    //    with interpolated motion). The old in-zone random move is disabled to
+    //    avoid fighting the scheduler + motion store.
 
     // 4) Energy drifts down a bit; recovers when idle/learning.
     if (agent.state === "Idle" || agent.state === "Learning") {
@@ -157,35 +131,9 @@ export function tick(
       agent.energy = Math.max(15, agent.energy - 2);
     }
 
-    // 5) Meeting states pull the agent toward a meeting zone's spot; otherwise
-    //    agents in a meeting zone may drift back to their home zone's spot.
-    if (agent.state === "In Meeting" || agent.state === "Collaborating") {
-      const meetingZones = ["war-room", "strategy-room", "client-success"] as const;
-      const target = pick([...meetingZones]);
-      const free = freeSpotsInZone(target, agents, i);
-      if (free.length) {
-        const c = pick(free);
-        agent.zone = target;
-        agent.gridX = c.x;
-        agent.gridY = c.y;
-      }
-    } else {
-      const homeZone = INITIAL_AGENTS[i].zone;
-      if (
-        (agent.zone === "war-room" ||
-          agent.zone === "strategy-room" ||
-          agent.zone === "client-success") &&
-        Math.random() < 0.3
-      ) {
-        const free = freeSpotsInZone(homeZone, agents, i);
-        if (free.length) {
-          const c = pick(free);
-          agent.zone = homeZone;
-          agent.gridX = c.x;
-          agent.gridY = c.y;
-        }
-      }
-    }
+    // 5) Zone transitions are owned by scheduleActivities() now (it sets the
+    //    target zone + anchor + path; the motion store interpolates the move).
+    //    Nothing to do here for position.
 
     agent.nextAction = pick(NEXT_ACTIONS);
 

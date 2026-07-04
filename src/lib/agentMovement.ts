@@ -1,13 +1,21 @@
 /**
- * agentMovement.ts — v0.6
+ * agentMovement.ts — v0.7 (rewritten to kill teleport).
  *
- * Two responsibilities:
- *   1. stepMovement(agents, dt) — interpolate each agent's render position
- *      toward its grid target so movement is SMOOTH (not teleport). Called
- *      every animation frame from OfficeWorld.
- *   2. scheduleActivities(agents, ratio) — the activity scheduler: pick a
- *      subset of agents (≈20-35%) and assign them new role-logical anchor
- *      destinations. Called on the Live Mode interval.
+ * KEY INSIGHT (root cause of teleport in v0.6):
+ *   The rAF loop mutated renderX/renderY IN PLACE on agent objects, but those
+ *   objects were replaced every Live tick (React immutable snapshot). Worse,
+ *   AgentSprite was memoized, so even when OfficeWorld re-rendered, the memo
+ *   skipped AgentSprite because the `agent` prop reference was unchanged — the
+ *   DOM position never updated mid-move, then snapped at the end = teleport.
+ *
+ * FIX:
+ *   Movement/visual state lives in a PERSISTENT store owned by OfficeWorld
+ *   (AgentMotionStore), keyed by agent id. It survives React snapshots. The
+ *   store interpolates renderX/renderY each frame with easeInOutCubic, over a
+ *   DURATION proportional to distance (not constant speed), so far moves take
+ *   visibly longer and short moves are snappy. OfficeWorld re-renders every
+ *   frame while anyone is moving, and passes a fresh `frame` value to
+ *   AgentSprite so memo can't skip it.
  */
 import type { Agent, AgentState, OfficeZoneId, ActivityKind } from "../types";
 import {
@@ -16,6 +24,179 @@ import {
   anchorOccupiedKey,
   type ActivityAnchor,
 } from "../data/activityAnchors";
+
+/** A single agent's visual motion state. */
+export interface AgentMotion {
+  agentId: string;
+  /** Current interpolated render position (grid units). */
+  renderX: number;
+  renderY: number;
+  /** Logical target grid position (from the snapshot). */
+  targetX: number;
+  targetY: number;
+  /** Origin of the current move (set when target changes). */
+  fromX: number;
+  fromY: number;
+  /** Move start timestamp (ms) and total duration (ms). */
+  startMs: number;
+  durationMs: number;
+  /** True while still interpolating toward target. */
+  isMoving: boolean;
+  /** 0..1 progress through the current move. */
+  progress: number;
+  facing: "left" | "right";
+  /** Waypoints (in grid space) to walk through before the final target. */
+  path: { x: number; y: number }[];
+  /** Index into `path` of the current leg's destination. */
+  legIndex: number;
+}
+
+/** Persistent per-agent motion store, owned by OfficeWorld. */
+export class AgentMotionStore {
+  private map = new Map<string, AgentMotion>();
+
+  /** Sync with the latest snapshot: adopt new targets, start moves. */
+  sync(agents: Agent[], now: number) {
+    for (const a of agents) {
+      let m = this.map.get(a.id);
+      if (!m) {
+        // First time seeing this agent: place it exactly at its target (no move).
+        m = {
+          agentId: a.id,
+          renderX: a.gridX,
+          renderY: a.gridY,
+          targetX: a.gridX,
+          targetY: a.gridY,
+          fromX: a.gridX,
+          fromY: a.gridY,
+          startMs: now,
+          durationMs: 0,
+          isMoving: false,
+          progress: 1,
+          facing: a.facing ?? "right",
+          path: [],
+          legIndex: 0,
+        };
+        this.map.set(a.id, m);
+      }
+
+      // Build the agent's intended path from the agent's current logical state.
+      // The agent carries optional waypoints; if absent we go straight.
+      const intendedPath = a.path && a.path.length > 0 ? a.path : [{ x: a.gridX, y: a.gridY }];
+
+      // Detect a NEW target: if the agent's gridX/gridY differs from what we
+      // last knew, (re)start the move from the current rendered position.
+      const finalTarget = intendedPath[intendedPath.length - 1];
+      const targetChanged =
+        finalTarget.x !== m.targetX || finalTarget.y !== m.targetY;
+
+      if (targetChanged && !m.isMoving) {
+        m.path = intendedPath;
+        m.legIndex = 0;
+        m.fromX = m.renderX;
+        m.fromY = m.renderY;
+        m.targetX = finalTarget.x;
+        m.targetY = finalTarget.y;
+        m.startMs = now;
+        // Duration scales with total path distance (cells), clamped.
+        const totalDist = pathDistance(m.renderX, m.renderY, intendedPath);
+        m.durationMs = Math.max(450, Math.min(4000, 280 * totalDist));
+        m.isMoving = true;
+        m.progress = 0;
+      }
+    }
+  }
+
+  /** Advance all motion by dt. Calls onArrive when a leg/whole move completes. */
+  step(now: number, onArrive?: (id: string) => void) {
+    for (const m of this.map.values()) {
+      if (!m.isMoving) continue;
+      const leg = m.path[Math.min(m.legIndex, m.path.length - 1)];
+      const elapsed = now - m.startMs;
+      const legDur = Math.max(
+        120,
+        (m.durationMs / m.path.length) * 1
+      );
+      const raw = Math.min(elapsed / legDur, 1);
+      const eased = easeInOutCubic(raw);
+      const fromLegX = m.legIndex === 0 ? m.fromX : m.path[m.legIndex - 1].x;
+      const fromLegY = m.legIndex === 0 ? m.fromY : m.path[m.legIndex - 1].y;
+      m.renderX = fromLegX + (leg.x - fromLegX) * eased;
+      m.renderY = fromLegY + (leg.y - fromLegY) * eased;
+      m.facing = leg.x < fromLegX ? "left" : "right";
+      m.progress = raw;
+
+      if (raw >= 1) {
+        // Reached this leg's waypoint; advance to the next leg or finish.
+        m.legIndex += 1;
+        m.startMs = now;
+        if (m.legIndex >= m.path.length) {
+          m.renderX = m.targetX;
+          m.renderY = m.targetY;
+          m.isMoving = false;
+          m.progress = 1;
+          onArrive?.(m.agentId);
+        }
+      }
+    }
+  }
+
+  get(agentId: string): AgentMotion | undefined {
+    return this.map.get(agentId);
+  }
+
+  /** True if any agent is currently moving (used to gate re-renders). */
+  anyMoving(): boolean {
+    for (const m of this.map.values()) if (m.isMoving) return true;
+    return false;
+  }
+
+  /** Hard-reset to a fresh agent list (used by Reset Day). */
+  reset(agents: Agent[]) {
+    this.map.clear();
+    const now = Date.now();
+    for (const a of agents) {
+      this.map.set(a.id, {
+        agentId: a.id,
+        renderX: a.gridX,
+        renderY: a.gridY,
+        targetX: a.gridX,
+        targetY: a.gridY,
+        fromX: a.gridX,
+        fromY: a.gridY,
+        startMs: now,
+        durationMs: 0,
+        isMoving: false,
+        progress: 1,
+        facing: a.facing ?? "right",
+        path: [],
+        legIndex: 0,
+      });
+    }
+  }
+}
+
+/** easeInOutCubic: slow at start/end, fast in the middle. */
+export function easeInOutCubic(t: number): number {
+  return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+}
+
+/** Total grid distance along a path from a start point. */
+function pathDistance(
+  fromX: number,
+  fromY: number,
+  path: { x: number; y: number }[]
+): number {
+  let d = 0;
+  let px = fromX;
+  let py = fromY;
+  for (const p of path) {
+    d += Math.hypot(p.x - px, p.y - py);
+    px = p.x;
+    py = p.y;
+  }
+  return d;
+}
 
 /** Map an agent's business state to an activity kind (drives visual effect). */
 export function activityForState(state: AgentState): ActivityKind {
@@ -27,7 +208,7 @@ export function activityForState(state: AgentState): ActivityKind {
       return "screen-review";
     case "Blocked":
     case "Escalating":
-      return "desk-work"; // stays at desk while blocked
+      return "desk-work";
     case "Shipping":
       return "desk-work";
     case "Idle":
@@ -42,7 +223,7 @@ export function activityForState(state: AgentState): ActivityKind {
   }
 }
 
-/** The zone an agent's role "lives" in (where it returns between activities). */
+/** The zone an agent's role "lives" in. */
 export function homeZoneForRole(role: Agent["role"]): OfficeZoneId {
   switch (role) {
     case "CEO":
@@ -57,7 +238,6 @@ export function homeZoneForRole(role: Agent["role"]): OfficeZoneId {
       return "qa-lab";
     case "Security":
     case "Risk":
-      return "command-center";
     case "Ops":
       return "command-center";
     case "Research":
@@ -71,7 +251,6 @@ export function homeZoneForRole(role: Agent["role"]): OfficeZoneId {
     case "Customer Success":
       return "client-success";
     case "Support":
-      return "open-workspace";
     case "Design":
     case "Product":
       return "open-workspace";
@@ -81,40 +260,44 @@ export function homeZoneForRole(role: Agent["role"]): OfficeZoneId {
 }
 
 /**
- * Interpolate render positions toward grid targets.
- * @param dt delta time in seconds.
- * @param speed grid cells per second.
+ * A simple waypoint between two zones: route through a corridor point so agents
+ * don't cut straight through furniture on long moves. We pick a midpoint in
+ * open corridor space (no full pathfinding yet — believable, not perfect).
  */
-export function stepMovement(agents: Agent[], dt: number, speed = 1.6): void {
-  for (const a of agents) {
-    const dx = a.gridX - a.renderX;
-    const dy = a.gridY - a.renderY;
-    const dist = Math.hypot(dx, dy);
-    if (dist < 0.02) {
-      a.renderX = a.gridX;
-      a.renderY = a.gridY;
-      a.isMoving = false;
-    } else {
-      const step = Math.min(dist, speed * dt);
-      a.renderX += (dx / dist) * step;
-      a.renderY += (dy / dist) * step;
-      a.isMoving = true;
-      a.facing = dx < 0 ? "left" : "right";
-    }
-  }
+function waypointBetween(
+  from: { x: number; y: number },
+  to: { x: number; y: number }
+): { x: number; y: number } | null {
+  // Only add a waypoint for genuinely long moves across the office.
+  const dist = Math.hypot(to.x - from.x, to.y - from.y);
+  if (dist < 6) return null;
+  // Corridor midpoint: bias toward the open central corridor (y ~ 9-11).
+  const midX = (from.x + to.x) / 2;
+  const midY = Math.max(9, Math.min(11, (from.y + to.y) / 2));
+  return { x: Math.round(midX), y: Math.round(midY) };
 }
 
 /**
  * The activity scheduler. Assigns a subset (~ratio) of agents new anchor
- * destinations that make sense for their role. Returns an array of movement
- * event descriptions for the timeline.
+ * destinations that make sense for their role. Returns movement events.
  */
 export function scheduleActivities(
   agents: Agent[],
-  ratio = 0.28
-): { agentId: string; agentName: string; fromZone: OfficeZoneId; toZone: OfficeZoneId; activity: ActivityKind }[] {
-  const events: { agentId: string; agentName: string; fromZone: OfficeZoneId; toZone: OfficeZoneId; activity: ActivityKind }[] = [];
-  // Build occupancy from current anchor assignments.
+  ratio = 0.25
+): {
+  agentId: string;
+  agentName: string;
+  fromZone: OfficeZoneId;
+  toZone: OfficeZoneId;
+  activity: ActivityKind;
+}[] {
+  const events: {
+    agentId: string;
+    agentName: string;
+    fromZone: OfficeZoneId;
+    toZone: OfficeZoneId;
+    activity: ActivityKind;
+  }[] = [];
   const occupied = new Set<string>();
   for (const a of agents) {
     if (a.anchorId) {
@@ -123,17 +306,13 @@ export function scheduleActivities(
     }
   }
 
-  // Shuffle agent order so different agents move each tick.
   const order = [...agents.keys()].sort(() => Math.random() - 0.5);
   const movers = Math.max(1, Math.round(agents.length * ratio));
-
   let moved = 0;
+
   for (const i of order) {
     if (moved >= movers) break;
     const agent = agents[i];
-
-    // 70% go to their role's home zone; 30% go to a meeting/collaboration zone
-    // if their state suggests it; idle agents drift to break/reception.
     let targetZone: OfficeZoneId;
     if (agent.state === "Idle") {
       targetZone = Math.random() < 0.6 ? "break-area" : "reception";
@@ -147,7 +326,6 @@ export function scheduleActivities(
     const anchor = pickFreeAnchor(targetZone, agent.role, occupied);
     if (!anchor) continue;
 
-    // Free the agent's previous anchor.
     if (agent.anchorId) {
       const prev = ACTIVITY_ANCHORS.find((x) => x.id === agent.anchorId);
       if (prev) occupied.delete(anchorOccupiedKey(prev));
@@ -155,6 +333,12 @@ export function scheduleActivities(
     occupied.add(anchorOccupiedKey(anchor));
 
     const fromZone = agent.zone;
+    const fromPos = { x: agent.gridX, y: agent.gridY };
+    const toPos = { x: anchor.x, y: anchor.y };
+    // Build a path with an optional corridor waypoint for long moves.
+    const wp = waypointBetween(fromPos, toPos);
+    agent.path = wp ? [wp, toPos] : [toPos];
+
     agent.zone = anchor.zone;
     agent.gridX = anchor.x;
     agent.gridY = anchor.y;
@@ -176,7 +360,6 @@ export function scheduleActivities(
   return events;
 }
 
-/** Find the anchor an agent is sitting at (for inspector/debug). */
 export function anchorForId(id: string | undefined): ActivityAnchor | undefined {
   if (!id) return undefined;
   return ACTIVITY_ANCHORS.find((a) => a.id === id);
