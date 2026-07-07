@@ -63,21 +63,24 @@ F("floor-lamp", 6, 3, "reception");
 F("rug", 2, 3, "reception", 3, 1);
 
 // ============================================================
-// 2. OPEN WORKSPACE  (zone: 7,0 9×7) — 6 workstations, 2 rows
+// 2. OPEN WORKSPACE  (zone: 7,0 9×7) — 8 workstations, 2 rows
 // ============================================================
 // Row A (back row, y=1)
 workstation(8, 1, "open-workspace");
 workstation(10, 1, "open-workspace");
 workstation(12, 1, "open-workspace");
+workstation(14, 1, "open-workspace");
 // Row B (front row, y=4)
 workstation(8, 4, "open-workspace");
 workstation(10, 4, "open-workspace");
 workstation(12, 4, "open-workspace");
-// Shared whiteboard + greenery
-F("whiteboard", 14, 1, "open-workspace");
+workstation(14, 4, "open-workspace");
+// Shared whiteboard + greenery + divider
+F("whiteboard", 15, 3, "open-workspace");
 F("plant", 7, 6, "open-workspace");
-F("plant", 14, 6, "open-workspace");
+F("plant", 15, 6, "open-workspace");
 F("floor-lamp", 11, 6, "open-workspace");
+F("divider", 16, 2, "open-workspace"); // separates from engineering
 
 // ============================================================
 // 3. ENGINEERING PODS  (zone: 16,0 14×7) — 3 pods of paired desks
@@ -98,21 +101,24 @@ F("floor-lamp", 22, 6, "engineering-pods");
 
 // ============================================================
 // 4. STRATEGY / MEETING ROOM  (zone: 0,5 7×7)
-//    Small conference table + 6 chairs + whiteboard + rug
+//    Conference table + 6 chairs + whiteboard + presentation screen + rug
 // ============================================================
 F("rug", 1, 6, "strategy-room", 5, 4);
-// Small round table (rendered as a small meeting-table, 1 cell)
-F("meeting-table", 3, 8, "strategy-room");
+// Larger conference table (3 wide for presence)
+F("meeting-table", 2, 8, "strategy-room", 3, 2);
 // 6 chairs around it
-F("chair", 3, 7, "strategy-room"); // top
-F("chair", 3, 9, "strategy-room"); // bottom
-F("chair", 2, 8, "strategy-room"); // left
-F("chair", 4, 8, "strategy-room"); // right
-F("chair", 2, 7, "strategy-room"); // top-left
-F("chair", 4, 9, "strategy-room"); // bottom-right
+F("chair", 2, 7, "strategy-room");
+F("chair", 4, 7, "strategy-room");
+F("chair", 2, 10, "strategy-room");
+F("chair", 4, 10, "strategy-room");
+F("chair", 1, 9, "strategy-room");
+F("chair", 5, 9, "strategy-room");
 F("whiteboard", 6, 6, "strategy-room");
-F("plant", 1, 10, "strategy-room");
-F("floor-lamp", 1, 6, "strategy-room");
+F("command-screen", 6, 8, "strategy-room"); // presentation screen
+F("glass-partition", 0, 5, "strategy-room", 4, 1); // glass front
+F("plant", 1, 11, "strategy-room");
+F("floor-lamp", 3, 6, "strategy-room");
+F("floor-lamp", 1, 10, "strategy-room");
 
 // ============================================================
 // 5. WAR ROOM / COMMAND CENTER  (zone: 0,18 9×6) — 4 wall screens + console
@@ -205,12 +211,21 @@ F("command-screen", 27, 18, "security-desk");
 F("plant", 26, 22, "security-desk");
 
 // ============================================================
-// Corridor greenery (subtle, fills negative space between zones)
+// Corridor greenery + zone dividers (fills negative space, defines zones)
 // ============================================================
 F("plant", 13, 10, undefined);
 F("plant", 20, 10, undefined);
 F("plant", 25, 10, undefined);
 F("floor-lamp", 11, 10, undefined);
+
+// Subtle glass/low dividers between major zone bands (readable without labels)
+F("glass-partition", 7, 7, undefined, 9, 1); // open-workspace / strategy band edge
+F("divider", 14, 11, undefined, 3, 1); // research / command band edge
+F("divider", 22, 11, undefined, 3, 1); // command / break edge
+F("glass-partition", 9, 17, undefined, 5, 1); // finance / client-success edge
+F("small-divider", 14, 17, undefined, 4, 1); // client-success / command edge
+F("plant", 7, 11, undefined); // corridor anchor
+F("plant", 13, 17, undefined);
 
 export const FURNITURE: Furniture[] = furniture;
 

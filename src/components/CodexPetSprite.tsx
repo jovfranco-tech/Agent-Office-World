@@ -64,6 +64,9 @@ export interface CodexPetSpriteProps {
   activity?: ActivityKind;
   /** v0.6: business state for the activity effect emoji. */
   stateLabel?: string;
+  /** v0.8: role also drives role-specific work effects (reuse of `role`). */
+  /** v0.8: when false, the role chip is hidden but role still drives effects. */
+  showRoleChip?: boolean;
   /** Optional pet.json override loaded by the parent (for non-default atlas). */
   petJson?: ResolvedPetSprite;
 }
@@ -85,6 +88,7 @@ export default function CodexPetSprite({
   scale = 1,
   activity,
   stateLabel,
+  showRoleChip = true,
 }: CodexPetSpriteProps) {
   const available = isPetAvailable(petSlug);
   const atlas = resolveAtlas(undefined) ?? DEFAULT_ATLAS;
@@ -95,7 +99,7 @@ export default function CodexPetSprite({
   const ringColor = statusRing ?? accent;
 
   // Activity effect: a small floating emoji above the sprite.
-  const effect = activityEffect(activity, stateLabel);
+  const effect = activityEffect(activity, stateLabel, role);
 
   const [progress, setProgress] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -190,7 +194,7 @@ export default function CodexPetSprite({
       )}
       {/* The actual sprite frame */}
       <div
-        className={`pet-sprite ${walking ? "pet-walking" : ""}`}
+        className={`pet-sprite ${walking ? "pet-walking" : "pet-working"}`}
         style={{
           position: "absolute",
           inset: 0,
@@ -266,7 +270,7 @@ export default function CodexPetSprite({
               {label}
             </div>
           )}
-          {role && (
+          {role && showRoleChip && (
             <div
               className="label-floating"
               style={{
@@ -287,26 +291,76 @@ export default function CodexPetSprite({
 }
 
 /**
- * Map an activity / business state to a small floating visual effect shown
- * above the sprite. Returns null when no effect applies (idle/walking).
+ * Map an activity / business state / ROLE to a small floating visual effect
+ * shown above the sprite. v0.8: role-specific micro-effects so each agent
+ * looks like it's doing its actual job. Returns null when no effect applies
+ * (walking — the motion itself is the signal).
+ *
+ * Effects are kept to ONE small glyph to avoid clutter; the role chip below
+ * the name already carries the role label.
  */
 function activityEffect(
   activity: ActivityKind | undefined,
-  stateLabel: string | undefined
+  stateLabel: string | undefined,
+  role: string | undefined
 ): { glyph: string; label: string } | null {
   // Walking: no effect (the motion itself is the signal).
   if (stateLabel === "walking") return null;
 
-  // Business-state-driven effects take priority for clarity.
-  if (stateLabel === "Thinking") return { glyph: "💭", label: "thinking" };
+  // High-signal business states override everything.
   if (stateLabel === "Blocked") return { glyph: "⚠️", label: "blocked" };
   if (stateLabel === "Escalating") return { glyph: "⚠️", label: "escalating" };
   if (stateLabel === "Shipping") return { glyph: "✨", label: "shipping" };
+  if (stateLabel === "Thinking") {
+    // Scientists/researchers think with a thought bubble; others with code.
+    if (role === "Research" || role === "Data" || role === "Strategy")
+      return { glyph: "💭", label: "thinking" };
+    return { glyph: "💭", label: "thinking" };
+  }
   if (stateLabel === "In Meeting" || stateLabel === "Collaborating") {
     return { glyph: "💬", label: "in meeting" };
   }
 
-  // Activity-driven effects.
+  // Role + activity driven micro-effects (the "working" feel).
+  const r = role ?? "";
+  if (activity === "break" || stateLabel === "Idle")
+    return { glyph: "☕", label: "on break" };
+  if (activity === "lobby") return { glyph: "🛋", label: "at reception" };
+
+  // Engineering cluster
+  if (r === "Coding") return { glyph: "</>", label: "coding" };
+  if (r === "Infra") return { glyph: "🗄", label: "infra" };
+  if (r === "Automation") return { glyph: "⚙", label: "automating" };
+
+  // Research cluster
+  if (r === "Research") return { glyph: "🔍", label: "researching" };
+  if (r === "Data") return { glyph: "📊", label: "analyzing" };
+  if (r === "Documentation") return { glyph: "📝", label: "documenting" };
+
+  // Quality cluster
+  if (r === "QA") return { glyph: "🐞", label: "testing" };
+  if (r === "Product") return { glyph: "📋", label: "planning" };
+
+  // Security/ops cluster
+  if (r === "Security") return { glyph: "🛡", label: "monitoring" };
+  if (r === "Risk") return { glyph: "⚠", label: "assessing risk" };
+  if (r === "Ops") return { glyph: "📡", label: "operating" };
+
+  // Leadership cluster
+  if (r === "CEO") return { glyph: "👑", label: "leading" };
+  if (r === "PMO") return { glyph: "📅", label: "coordinating" };
+  if (r === "Strategy") return { glyph: "♟", label: "strategizing" };
+
+  // Commercial cluster
+  if (r === "Sales") return { glyph: "📈", label: "selling" };
+  if (r === "Support") return { glyph: "🎧", label: "supporting" };
+  if (r === "Customer Success") return { glyph: "🤝", label: "with clients" };
+
+  // Finance/legal cluster
+  if (r === "Finance") return { glyph: "💰", label: "finance" };
+  if (r === "Legal/Compliance") return { glyph: "⚖", label: "compliance" };
+
+  // Activity fallback
   switch (activity) {
     case "meeting":
       return { glyph: "💬", label: "meeting" };
@@ -317,10 +371,6 @@ function activityEffect(
       return { glyph: "📖", label: "researching" };
     case "qa-test":
       return { glyph: "🔬", label: "testing" };
-    case "break":
-      return { glyph: "☕", label: "on break" };
-    case "lobby":
-      return { glyph: "🛋", label: "at reception" };
     case "desk-work":
     default:
       return { glyph: "⌨", label: "working" };

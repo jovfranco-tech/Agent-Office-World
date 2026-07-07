@@ -515,3 +515,54 @@ in the Codex Pets atlas.)
 - Real walk sprites with 4 directions (current run row is side-view only).
 - Visual step particles / footstep puffs while walking.
 - Seated agent z-index behind desk front-edge.
+
+---
+
+# v0.8 + v0.9 — Work Activities + Visual Director Pass
+
+## v0.8: Work activities (agents visibly work)
+- **Role-specific activity effects**: each role now shows a distinct small
+  glyph while working — `</>` (Coding), 🗄 (Infra), ⚙ (Automation), 🔍 (Research),
+  📊 (Data), 📝 (Docs), 🐞 (QA), 📋 (Product), 🛡 (Security), ⚠ (Risk), 📡 (Ops),
+  👑 (CEO), 📅 (PMO), ♟ (Strategy), 📈 (Sales), 🎧 (Support), 🤝 (CS), 💰 (Finance),
+  ⚖ (Legal). High-signal states override: ⚠️ (blocked), ✨ (shipping), 💬 (meeting).
+- **MonitorGlow layer**: the monitor in front of each working agent lights up
+  with a soft pulsing blue glow (cyan for command, orange for QA). This is the
+  key effect that makes agents look like they're actually working.
+- **Working breathing**: settled agents use `pet-working` (subtle 2.6s breathe).
+- New `activityEffect(activity, stateLabel, role)` is fully role-aware.
+
+## v0.9: Visual Director Pass — composition, scale, density, readability
+- **Scale fix**: agent sprite size 64 → 40px so they no longer tower over
+  desks; furniture now has proper presence.
+- **Density up**: Open Workspace expanded to 8 workstations (was 6); Strategy
+  Room got a larger 3×2 conference table + 6 chairs + presentation screen +
+  glass front. Added corridor dividers/partitions between zone bands.
+- **Zones readable by furniture** (not labels): reception sign + desk + bench,
+  8-station open workspace rows, 3 engineering pods with dual monitors, large
+  conference table + whiteboard + screen, 7-screen command wall + console +
+  rack, research library shelves + laptops, finance cabinets, break area
+  sofa + coffee machine.
+- **Showcase Mode**: toggle hides the sidebar + forces labels off for a clean
+  demo/screenshot view. (`✦ Showcase` button in the control bar.)
+
+## Final metrics (all exceed spec minimums)
+- 22 desks/workstations (min 12) · 33 chairs (min 12) · 40 monitors/screens (min 15)
+- 7 command-center screens (min 4) · 19 plants (min 6) · 4 rugs (min 3)
+- 7 partitions/dividers (min 6) · 39 activity anchors (min 20)
+- 21 agents with visible activity effects (min 15)
+
+## Files modified (v0.8/v0.9)
+- `src/components/CodexPetSprite.tsx` (role-aware effects, showRoleChip, breathe)
+- `src/components/AgentSprite.tsx` (passes role always, showRoleChip gate)
+- `src/components/MonitorGlow.tsx` (NEW: desk glow for working agents)
+- `src/components/OfficeWorld.tsx` (MonitorGlow layer, sprite scale 40)
+- `src/components/ControlBar.tsx` (Showcase Mode button)
+- `src/data/furniture.ts` (8 workstations, conference table, partitions, dividers)
+- `src/App.tsx` (showcase state, effectiveShowLabels, sidebar gate)
+- `src/styles.css` (monitorPulse, workBreathe, activityPop keyframes)
+
+## Validation
+- `npx tsc --noEmit` ✅ · `npm run build` ✅ (JS 214 KB gz 66 KB)
+- 21 unique agents, 0 duplicates ✅
+- Movement intact (motion store unchanged) ✅

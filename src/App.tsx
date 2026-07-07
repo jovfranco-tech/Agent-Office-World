@@ -76,6 +76,7 @@ export default function App() {
   const [roleFilter, setRoleFilter] = useState<AgentRole | null>(null);
   const [stateFilter, setStateFilter] = useState<AgentState | null>(null);
   const [showLabels, setShowLabels] = useState(true);
+  const [showcase, setShowcase] = useState(false);
   // ?autoplay=1 starts Live Mode on load (also useful for headless verification).
   const [liveMode, setLiveMode] = useState(() => {
     try {
@@ -90,6 +91,8 @@ export default function App() {
 
   const agents = snap.agents;
   const events = snap.events;
+  // In Showcase Mode: labels are hidden and sidebar collapses for a cleaner view.
+  const effectiveShowLabels = showLabels && !showcase;
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
   const selectedZone = selectedZoneId ? getZone(selectedZoneId) ?? null : null;
@@ -187,6 +190,8 @@ export default function App() {
         onStateFilter={setStateFilter}
         showLabels={showLabels}
         onToggleLabels={() => setShowLabels((v) => !v)}
+        showcase={showcase}
+        onToggleShowcase={() => setShowcase((v) => !v)}
         hour={hour}
       />
 
@@ -199,7 +204,7 @@ export default function App() {
             selectedZoneId={selectedZoneId}
             roleFilter={roleFilter}
             stateFilter={stateFilter}
-            showLabels={showLabels}
+            showLabels={effectiveShowLabels}
             onSelectAgent={handleSelectAgent}
             onSelectZone={handleSelectZone}
           />
@@ -232,8 +237,8 @@ export default function App() {
           </button>
         </div>
 
-        {/* Discreet side panel */}
-        {panelOpen && (
+        {/* Discreet side panel (hidden in Showcase Mode) */}
+        {panelOpen && !showcase && (
           <aside
             className="scroll-thin"
             style={{

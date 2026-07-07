@@ -104,7 +104,8 @@ function AgentSpriteImpl({
         activity={activity}
         stateLabel={isMoving ? "walking" : agent.state}
         label={showLabels ? agent.name : undefined}
-        role={showLabels ? agent.role : undefined}
+        role={agent.role}
+        showRoleChip={showLabels}
       />
     </div>
   );

@@ -16,6 +16,7 @@ import type { Agent, OfficeZone, AgentRole, AgentState } from "../types";
 import OfficeFloor, { computeSceneBounds } from "./OfficeFloor";
 import FurnitureLayer from "./FurnitureLayer";
 import AgentSprite from "./AgentSprite";
+import MonitorGlow from "./MonitorGlow";
 import { DEFAULT_TILE, type TileSize } from "../lib/isometric";
 import { AgentMotionStore } from "../lib/agentMovement";
 
@@ -111,7 +112,11 @@ export default function OfficeWorld({
     onSelectZone(null);
   }
 
-  const spriteSize = 64;
+  // Build a motions map for MonitorGlow (cheap; rebuilt each frame).
+  const motionMap = new Map<string, ReturnType<AgentMotionStore["get"]>>();
+  for (const a of agents) motionMap.set(a.id, store.get(a.id));
+
+  const spriteSize = 40;
   const labelsReadable = scale > 0.7;
   const effectiveShowLabels = showLabels && labelsReadable;
 
@@ -146,6 +151,15 @@ export default function OfficeWorld({
           }
         />
         <FurnitureLayer tile={tile} originX={originX} originY={originY} />
+        {/* Monitor glow: lights up the screen in front of each working agent */}
+        <MonitorGlow
+          agents={agents}
+          motions={motionMap}
+          tile={tile}
+          originX={originX}
+          originY={originY}
+          frame={frame}
+        />
         {sortedAgents.map((agent) => {
           const matchesFilter =
             (!roleFilter || agent.role === roleFilter) &&

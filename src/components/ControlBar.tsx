@@ -18,6 +18,8 @@ interface Props {
   onStateFilter: (s: AgentState | null) => void;
   showLabels: boolean;
   onToggleLabels: () => void;
+  showcase: boolean;
+  onToggleShowcase: () => void;
   hour: number;
 }
 
@@ -55,6 +57,8 @@ export default function ControlBar({
   onStateFilter,
   showLabels,
   onToggleLabels,
+  showcase,
+  onToggleShowcase,
   hour,
 }: Props) {
   return (
@@ -149,6 +153,15 @@ export default function ControlBar({
         title="Toggle floating labels"
       >
         {showLabels ? "🏷 Labels on" : "🏷 Labels off"}
+      </button>
+
+      <button
+        className="btn"
+        onClick={onToggleShowcase}
+        style={showcase ? { borderColor: "#a855f7", color: "#d8b4fe" } : undefined}
+        title="Showcase Mode: cleaner view for screenshots/demo"
+      >
+        {showcase ? "✦ Showcase on" : "✦ Showcase"}
       </button>
     </div>
   );

@@ -212,6 +212,31 @@ body {
   50% { transform: translateY(-2px); }
 }
 
+/* Monitor glow pulse when an agent works at a desk */
+@keyframes monitorPulse {
+  0%, 100% { opacity: 0.55; transform: translate(-50%, -85%) scale(0.92); }
+  50% { opacity: 0.95; transform: translate(-50%, -85%) scale(1.08); }
+}
+
+/* Subtle idle breathing for working agents (not walking) */
+.pet-working {
+  animation: workBreathe 2.6s ease-in-out infinite;
+}
+@keyframes workBreathe {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-1px); }
+}
+
+/* Activity effect pop-in */
+@keyframes activityPop {
+  0% { opacity: 0; transform: translate(-50%, -90%) scale(0.6); }
+  60% { opacity: 1; transform: translate(-50%, -110%) scale(1.1); }
+  100% { opacity: 1; transform: translate(-50%, -100%) scale(1); }
+}
+.activity-effect {
+  animation: activityPop 0.5s ease-out;
+}
+
 /* Agent transition between grid positions */
 .agent-mover {
   transition: left 1.1s linear, top 1.1s linear;
