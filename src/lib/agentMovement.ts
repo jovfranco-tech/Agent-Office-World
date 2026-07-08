@@ -19,11 +19,10 @@
  */
 import type { Agent, AgentState, OfficeZoneId, ActivityKind } from "../types";
 import {
-  ACTIVITY_ANCHORS,
-  pickFreeAnchor,
-  anchorOccupiedKey,
-  type ActivityAnchor,
-} from "../data/activityAnchors";
+  V2_ANCHORS,
+  pickFreeV2Anchor,
+  type V2Anchor,
+} from "../data/officeSceneV2Anchors";
 
 /** A single agent's visual motion state. */
 export interface AgentMotion {
@@ -235,7 +234,7 @@ export function homeZoneForRole(role: Agent["role"]): OfficeZoneId {
     case "Automation":
       return "engineering-pods";
     case "QA":
-      return "qa-lab";
+      return "research-library"; // QA merged into Research/QA zone in V2
     case "Security":
     case "Risk":
     case "Ops":
@@ -249,7 +248,7 @@ export function homeZoneForRole(role: Agent["role"]): OfficeZoneId {
       return "finance-desk";
     case "Sales":
     case "Customer Success":
-      return "client-success";
+      return "break-area"; // client-facing roles lounge in break area in V2
     case "Support":
     case "Design":
     case "Product":
@@ -301,8 +300,8 @@ export function scheduleActivities(
   const occupied = new Set<string>();
   for (const a of agents) {
     if (a.anchorId) {
-      const an = ACTIVITY_ANCHORS.find((x) => x.id === a.anchorId);
-      if (an) occupied.add(anchorOccupiedKey(an));
+      const an = V2_ANCHORS.find((x) => x.id === a.anchorId);
+      if (an) occupied.add(`${an.x},${an.y}`);
     }
   }
 
@@ -317,50 +316,50 @@ export function scheduleActivities(
     if (agent.state === "Idle") {
       targetZone = Math.random() < 0.6 ? "break-area" : "reception";
     } else if (agent.state === "In Meeting" || agent.state === "Collaborating") {
-      const meetingZones: OfficeZoneId[] = ["strategy-room", "war-room", "client-success"];
+      // Meeting states go to strategy-room or command-center (the two meeting zones in V2)
+      const meetingZones: OfficeZoneId[] = ["strategy-room", "command-center"];
       targetZone = meetingZones[Math.floor(Math.random() * meetingZones.length)];
     } else {
       targetZone = Math.random() < 0.75 ? homeZoneForRole(agent.role) : agent.zone;
     }
 
-    const anchor = pickFreeAnchor(targetZone, agent.role, occupied);
+    const anchor = pickFreeV2Anchor(targetZone, agent.role, occupied);
     if (!anchor) continue;
 
     if (agent.anchorId) {
-      const prev = ACTIVITY_ANCHORS.find((x) => x.id === agent.anchorId);
-      if (prev) occupied.delete(anchorOccupiedKey(prev));
+      const prev = V2_ANCHORS.find((x) => x.id === agent.anchorId);
+      if (prev) occupied.delete(`${prev.x},${prev.y}`);
     }
-    occupied.add(anchorOccupiedKey(anchor));
+    occupied.add(`${anchor.x},${anchor.y}`);
 
     const fromZone = agent.zone;
     const fromPos = { x: agent.gridX, y: agent.gridY };
     const toPos = { x: anchor.x, y: anchor.y };
-    // Build a path with an optional corridor waypoint for long moves.
     const wp = waypointBetween(fromPos, toPos);
     agent.path = wp ? [wp, toPos] : [toPos];
 
-    agent.zone = anchor.zone;
+    agent.zone = anchor.zoneId;
     agent.gridX = anchor.x;
     agent.gridY = anchor.y;
     agent.anchorId = anchor.id;
-    agent.activity = anchor.activity;
+    agent.activity = anchor.activity as ActivityKind;
     agent.activityUntil = Date.now() + (4000 + Math.random() * 4000);
     moved++;
 
-    if (fromZone !== anchor.zone) {
+    if (fromZone !== anchor.zoneId) {
       events.push({
         agentId: agent.id,
         agentName: agent.name,
         fromZone,
-        toZone: anchor.zone,
-        activity: anchor.activity,
+        toZone: anchor.zoneId,
+        activity: anchor.activity as ActivityKind,
       });
     }
   }
   return events;
 }
 
-export function anchorForId(id: string | undefined): ActivityAnchor | undefined {
+export function anchorForId(id: string | undefined): V2Anchor | undefined {
   if (!id) return undefined;
-  return ACTIVITY_ANCHORS.find((a) => a.id === id);
+  return V2_ANCHORS.find((a) => a.id === id);
 }

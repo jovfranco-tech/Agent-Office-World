@@ -566,3 +566,54 @@ in the Codex Pets atlas.)
 - `npx tsc --noEmit` ✅ · `npm run build` ✅ (JS 214 KB gz 66 KB)
 - 21 unique agents, 0 duplicates ✅
 - Movement intact (motion store unchanged) ✅
+
+---
+
+# OfficeSceneV2 — Visual Director Pass (parallel scene rewrite)
+
+**Meta:** reemplazar visualmente la escena central por una oficina isométrica
+compacta, densa y premium. Misma lógica de agentes/movimiento/Live Mode.
+
+## Qué se reemplazó
+OfficeWorld (renderer viejo) → **OfficeSceneV2** (nuevo renderer paralelo).
+Los archivos viejos (OfficeFloor, FurnitureLayer, MonitorGlow, officeLayout,
+furniture.ts, activityAnchors.ts) quedan en el repo pero ya no se renderizan.
+
+## Arquitectura V2
+- **Grilla compacta 22×18** (vs 30×24 vieja) → la oficina ocupa más pantalla.
+- **8 zonas curadas** con rectángulos manuales e intencionales.
+- **Componentes Iso* grandes** (IsoDesk, IsoDualMonitorDesk, IsoMeetingTable,
+  IsoReceptionDesk, IsoCommandWall, IsoSofa, etc.) — cada mueble es un
+  objeto reconocible con sombras/bordes/glow, no un rectángulo placeholder.
+- **33 activity anchors** pegados a muebles reales (nearbyFurnitureId validado).
+- **Movement intacto**: AgentMotionStore + rAF loop + frame-busted memo,
+  idéntico al patrón v0.7. scheduleActivities usa pickFreeV2Anchor.
+- **Showcase Mode real**: padding reducido (16px) + zoom mayor + sidebar oculto.
+- **Lighting layer**: glow focal por zona (command center azul, break cálido)
+  + monitor glow per-agente cuando trabaja.
+
+## Métricas V2
+- 15 desks · 28 chairs · 22 monitors/screens · 6 command screens
+- 2 meeting tables · 1 reception desk · 3 sofas · 4 bookshelves · 2 cabinets
+- 15 plants · 10 lamps · 8 partitions/dividers · 5 rugs · 33 anchors
+- 105 furniture pieces total · 21 unique agents (0 duplicates)
+
+## Archivos creados
+- `src/data/officeSceneV2Layout.ts` (grilla 22×18 + zonas + furniture)
+- `src/data/officeSceneV2Anchors.ts` (33 anchors pegados a muebles)
+- `src/components/iso/IsoFurniture.tsx` (15+ componentes Iso*)
+- `src/components/OfficeSceneV2.tsx` (orquestador con movement store)
+- `src/components/OfficeSceneV2Floor.tsx` (piso cálido + zone tints)
+- `src/components/OfficeSceneV2Furniture.tsx` (depth-sorted Iso* render)
+- `src/components/OfficeSceneV2Lighting.tsx` (focal glow + monitor glow)
+
+## Archivos modificados
+- `src/data/agents.ts` (posiciones V2 directas)
+- `src/lib/agentMovement.ts` (scheduleActivities → V2 anchors, homeZoneForRole V2)
+- `src/App.tsx` (OfficeSceneV2 en vez de OfficeWorld, showcase prop)
+- `src/types.ts` (ActivityKind extendido con valores V2)
+
+## Validación
+- `npx tsc --noEmit` ✅ · `npm run build` ✅ (JS 214 KB gz 65 KB)
+- Screenshot V2: 7/10 — claramente distinto al V1, se lee como oficina
+- Movement intacto (smooth, no teleport) · 21 agents unique

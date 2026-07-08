@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Agent, AgentRole, AgentState, OfficeZone } from "./types";
-import OfficeWorld from "./components/OfficeWorld";
+import OfficeSceneV2 from "./components/OfficeSceneV2";
 import ControlBar from "./components/ControlBar";
 import OfficeLegend from "./components/OfficeLegend";
 import EventTimeline from "./components/EventTimeline";
@@ -198,13 +198,14 @@ export default function App() {
       <div style={{ flex: 1, display: "flex", minHeight: 0 }}>
         {/* The office dominates the screen */}
         <div style={{ flex: 1, position: "relative", minWidth: 0 }}>
-          <OfficeWorld
+          <OfficeSceneV2
             agents={agents}
             selectedAgentId={selectedAgentId}
             selectedZoneId={selectedZoneId}
             roleFilter={roleFilter}
             stateFilter={stateFilter}
             showLabels={effectiveShowLabels}
+            showcase={showcase}
             onSelectAgent={handleSelectAgent}
             onSelectZone={handleSelectZone}
           />

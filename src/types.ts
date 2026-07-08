@@ -12,7 +12,12 @@ export type ActivityKind =
   | "qa-test"
   | "command-monitoring"
   | "break"
-  | "lobby";
+  | "lobby"
+  | "engineering"
+  | "command-center"
+  | "finance-legal"
+  | "qa"
+  | "reception";
 
 export type AgentRole =
   | "CEO"
