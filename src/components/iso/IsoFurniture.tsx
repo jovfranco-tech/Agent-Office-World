@@ -298,12 +298,10 @@ export function renderIsoPiece(f: V2Furniture, tile: TileSize, s = 1) {
   switch (f.type) {
     case "desk": return <IsoDesk f={f} tile={tile} s={s} />;
     case "dual-monitor-desk": return <IsoDualMonitorDesk f={f} tile={tile} s={s} />;
-    case "laptop-desk": return <IsoDesk f={f} tile={tile} s={s} />;
     case "chair": return <IsoChair f={f} tile={tile} s={s} />;
     case "meeting-table": return <IsoMeetingTable f={f} tile={tile} s={s} />;
     case "reception-desk": return <IsoReceptionDesk f={f} tile={tile} s={s} />;
     case "command-wall": return <IsoCommandWall f={f} tile={tile} s={s} />;
-    case "command-screen": return <IsoCommandScreen f={f} tile={tile} s={s} />;
     case "presentation-screen": return <IsoPresentationScreen f={f} tile={tile} s={s} />;
     case "sofa": return <IsoSofa f={f} tile={tile} s={s} />;
     case "coffee-machine": return <IsoCoffeeMachine f={f} tile={tile} s={s} />;

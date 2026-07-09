@@ -34,8 +34,8 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "linear-gradient(135deg, #161a26 0%, #131822 50%, #0f1320 100%)",
-          boxShadow: "inset 0 0 50px rgba(0,0,0,0.5)",
+            "linear-gradient(135deg, #1e2330 0%, #1a1f2b 50%, #161a24 100%)",
+          boxShadow: "inset 0 0 40px rgba(0,0,0,0.35)",
         }}
       >
         {/* Subtle floor tile texture */}

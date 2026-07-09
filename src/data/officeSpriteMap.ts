@@ -19,10 +19,9 @@ const BASE = "/sprites/office";
 export function spriteForType(type: V2FurnitureType): string | null {
   switch (type) {
     case "desk":
-    case "laptop-desk":
       return "desk";
     case "dual-monitor-desk":
-      return "desk"; // desk base; monitors added separately
+      return "desk";
     case "chair":
       return "chairDesk";
     case "meeting-table":
@@ -44,9 +43,8 @@ export function spriteForType(type: V2FurnitureType): string | null {
     case "server-rack":
       return null; // rendered as CSS with LEDs
     case "command-wall":
-    case "command-screen":
     case "presentation-screen":
-      return "televisionModern"; // screens
+      return "televisionModern";
     case "plant":
       return "pottedPlant";
     case "floor-lamp":
@@ -88,7 +86,7 @@ export function deskExtras(type: V2FurnitureType): string[] {
   if (type === "dual-monitor-desk") {
     return [`${BASE}/computerScreen_NE.png`, `${BASE}/computerScreen_SE.png`];
   }
-  if (type === "desk" || type === "laptop-desk") {
+  if (type === "desk") {
     return [`${BASE}/computerScreen_NE.png`];
   }
   return [];
