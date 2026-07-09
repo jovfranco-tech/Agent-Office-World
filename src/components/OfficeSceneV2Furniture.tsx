@@ -73,26 +73,42 @@ function FurnitureItem({
     );
   }
 
-  // Real sprite furniture
+  // Real sprite furniture — scaled 1.8x for presence + contact shadow
   if (hasSprite(f.type)) {
     const url = spriteUrl(f.type, "right");
     const extras = deskExtras(f.type);
+    const SPRITE_SCALE = 1.8;
     return (
       <div
         style={{
           position: "absolute",
           left,
           top,
-          transform: "translate(-50%, -100%)",
+          transform: `translate(-50%, -100%) scale(${SPRITE_SCALE})`,
           zIndex: depth,
           pointerEvents: "none",
+          filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.35))",
         }}
       >
+        {/* Contact shadow ellipse on the floor */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: -4,
+            left: "50%",
+            width: "70%",
+            height: 12,
+            transform: "translateX(-50%)",
+            background: "radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+          }}
+        />
         {url && (
           <img
             src={url}
             alt={f.type}
-            style={{ imageRendering: "auto", display: "block" }}
+            style={{ imageRendering: "auto", display: "block", position: "relative" }}
             draggable={false}
           />
         )}

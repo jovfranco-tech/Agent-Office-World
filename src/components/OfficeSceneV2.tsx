@@ -80,7 +80,7 @@ export default function OfficeSceneV2({
       const availW = el.clientWidth - padding * 2;
       const availH = el.clientHeight - padding * 2;
       const s = Math.min(availW / width, availH / height);
-      setScale(Math.max(0.4, Math.min(2.5, s)));
+      setScale(Math.max(0.5, Math.min(3.0, s)));
     }
     fit();
     window.addEventListener("resize", fit);
@@ -107,7 +107,7 @@ export default function OfficeSceneV2({
     onSelectZone(null);
   }
 
-  const spriteSize = 42;
+  const spriteSize = 56;
   const labelsReadable = scale > 0.65;
   const effectiveShowLabels = showLabels && labelsReadable;
 

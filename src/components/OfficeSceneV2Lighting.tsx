@@ -51,10 +51,10 @@ function OfficeSceneV2LightingImpl({
     const cy = (bounds.minY + bounds.maxY) / 2;
     const color =
       z.id === "command-center"
-        ? "rgba(34,211,238,0.07)"
+        ? "rgba(34,211,238,0.15)"
         : z.id === "break-area"
-        ? "rgba(250,220,150,0.06)"
-        : "rgba(96,165,250,0.06)";
+        ? "rgba(250,220,150,0.10)"
+        : "rgba(96,165,250,0.08)";
     return { left: cx - originX, top: cy - originY, w: bounds.width, h: bounds.height, color, key: z.id };
   });
 

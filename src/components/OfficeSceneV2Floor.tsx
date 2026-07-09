@@ -95,7 +95,7 @@ export function computeV2SceneBounds(tile: TileSize = DEFAULT_TILE) {
     { x: 0, y: 0, w: V2_GRID.w, h: V2_GRID.h },
     tile
   );
-  const pad = 60;
+  const pad = 30;
   return {
     originX: bounds.minX - pad,
     originY: bounds.minY - pad,
