@@ -1,9 +1,16 @@
 /**
- * OfficeSceneV2Furniture — renders V2 furniture, depth-sorted by x+y.
- * Rugs render first (behind everything), then all other pieces.
+ * OfficeSceneV2Furniture — renders V2 furniture using REAL Kenney CC0 sprites.
+ *
+ * For types that have a sprite PNG (desk, chair, sofa, plant, etc.), renders an
+ * <img> positioned at the grid cell. For types without a sprite (walls, glass,
+ * whiteboard, server-rack), falls back to the CSS Iso* components.
+ *
+ * Sprites are bottom-anchored: the bottom-center of the PNG aligns to the grid
+ * cell center, so furniture "sits on" the floor tile.
  */
 import { memo } from "react";
-import { V2_FURNITURE } from "../data/officeSceneV2Layout";
+import { V2_FURNITURE, type V2Furniture } from "../data/officeSceneV2Layout";
+import { spriteUrl, deskExtras, hasSprite } from "../data/officeSpriteMap";
 import { renderIsoPiece } from "./iso/IsoFurniture";
 import { gridCenterToScreen, DEFAULT_TILE, type TileSize } from "../lib/isometric";
 
@@ -13,11 +20,124 @@ interface Props {
   originY: number;
 }
 
+/** Render a single furniture piece — sprite PNG if available, else CSS fallback. */
+function FurnitureItem({
+  f,
+  tile,
+  originX,
+  originY,
+}: {
+  f: V2Furniture;
+  tile: TileSize;
+  originX: number;
+  originY: number;
+}) {
+  const pos = gridCenterToScreen(f.x, f.y, tile);
+  const left = pos.x - originX;
+  const top = pos.y - originY;
+  const depth = f.x + f.y;
+
+  // Sprites that span multiple cells (rugs, big tables) use center of span.
+  const spanW = f.w ?? 1;
+  const spanH = f.h ?? 1;
+  const spanPos =
+    spanW > 1 || spanH > 1
+      ? gridCenterToScreen(f.x + spanW / 2, f.y + spanH / 2, tile)
+      : pos;
+  const spanLeft = spanPos.x - originX;
+  const spanTop = spanPos.y - originY;
+
+  // Rug: render first (behind), using sprite if available
+  if (f.type === "rug") {
+    const rugUrl = spriteUrl("rug");
+    return (
+      <div
+        style={{
+          position: "absolute",
+          left: spanLeft,
+          top: spanTop,
+          transform: "translate(-50%, -50%)",
+          zIndex: depth,
+          pointerEvents: "none",
+        }}
+      >
+        {rugUrl ? (
+          <img
+            src={rugUrl}
+            alt="rug"
+            style={{ width: tile.w * spanW * 1.1, opacity: 0.7, imageRendering: "auto" }}
+            draggable={false}
+          />
+        ) : null}
+      </div>
+    );
+  }
+
+  // Real sprite furniture
+  if (hasSprite(f.type)) {
+    const url = spriteUrl(f.type, "right");
+    const extras = deskExtras(f.type);
+    return (
+      <div
+        style={{
+          position: "absolute",
+          left,
+          top,
+          transform: "translate(-50%, -100%)",
+          zIndex: depth,
+          pointerEvents: "none",
+        }}
+      >
+        {url && (
+          <img
+            src={url}
+            alt={f.type}
+            style={{ imageRendering: "auto", display: "block" }}
+            draggable={false}
+          />
+        )}
+        {/* Monitor overlays for desks */}
+        {extras.map((ex, i) => (
+          <img
+            key={i}
+            src={ex}
+            alt="monitor"
+            style={{
+              position: "absolute",
+              left: i === 0 ? "20%" : "55%",
+              top: "-15%",
+              width: "35%",
+              imageRendering: "auto",
+            }}
+            draggable={false}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // CSS fallback for types without sprites (walls, glass, whiteboard, server-rack)
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left,
+        top,
+        zIndex: depth,
+        pointerEvents: "none",
+      }}
+    >
+      {renderIsoPiece(f, tile)}
+    </div>
+  );
+}
+
 function OfficeSceneV2FurnitureImpl({
   tile = DEFAULT_TILE,
   originX,
   originY,
 }: Props) {
+  // Rugs first (behind), then everything else depth-sorted.
   const rugs = V2_FURNITURE.filter((f) => f.type === "rug");
   const rest = V2_FURNITURE.filter((f) => f.type !== "rug").sort(
     (a, b) => a.x + a.y - (b.x + b.y)
@@ -25,28 +145,12 @@ function OfficeSceneV2FurnitureImpl({
 
   return (
     <>
-      {rugs.map((f) => {
-        const pos = gridCenterToScreen(f.x + (f.w ?? 1) / 2, f.y + (f.h ?? 1) / 2, tile);
-        return (
-          <div
-            key={f.id}
-            style={{ position: "absolute", left: pos.x - originX, top: pos.y - originY, zIndex: f.x + f.y }}
-          >
-            {renderIsoPiece(f, tile, 1.1)}
-          </div>
-        );
-      })}
-      {rest.map((f) => {
-        const pos = gridCenterToScreen(f.x, f.y, tile);
-        return (
-          <div
-            key={f.id}
-            style={{ position: "absolute", left: pos.x - originX, top: pos.y - originY, zIndex: f.x + f.y }}
-          >
-            {renderIsoPiece(f, tile)}
-          </div>
-        );
-      })}
+      {rugs.map((f) => (
+        <FurnitureItem key={f.id} f={f} tile={tile} originX={originX} originY={originY} />
+      ))}
+      {rest.map((f) => (
+        <FurnitureItem key={f.id} f={f} tile={tile} originX={originX} originY={originY} />
+      ))}
     </>
   );
 }
