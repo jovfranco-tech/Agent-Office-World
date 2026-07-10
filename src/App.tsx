@@ -13,6 +13,7 @@ import OfficeLegend from "./components/OfficeLegend";
 import EventTimeline from "./components/EventTimeline";
 import AgentInspector from "./components/AgentInspector";
 import ZoneInspector from "./components/ZoneInspector";
+import AgentChat from "./components/AgentChat";
 import {
   initialSnapshot,
   simulateHour,
@@ -23,6 +24,7 @@ import { getZone } from "./data/officeZones";
 import { EVENT_TEMPLATES } from "./data/events";
 import { INITIAL_AGENTS } from "./data/agents";
 import { scheduleActivities } from "./lib/agentMovement";
+import { generateChatter } from "./data/agentPersonalities";
 
 let idc = 0;
 function eid(): string {
@@ -77,6 +79,7 @@ export default function App() {
   const [stateFilter, setStateFilter] = useState<AgentState | null>(null);
   const [showLabels, setShowLabels] = useState(true);
   const [showcase, setShowcase] = useState(false);
+  const [chatAgentId, setChatAgentId] = useState<string | null>(null);
   // ?autoplay=1 starts Live Mode on load (also useful for headless verification).
   const [liveMode, setLiveMode] = useState(() => {
     try {
@@ -96,6 +99,7 @@ export default function App() {
 
   const selectedAgent = agents.find((a) => a.id === selectedAgentId) ?? null;
   const selectedZone = selectedZoneId ? getZone(selectedZoneId) ?? null : null;
+  const chatAgent = agents.find((a) => a.id === chatAgentId) ?? null;
 
   // ---- Live Mode: advance the simulation on an interval -------------------
   useEffect(() => {
@@ -113,18 +117,32 @@ export default function App() {
         // 2) Move ~28% of agents to role-logical anchors (visible motion).
         const moved = scheduleActivities(next.agents, 0.28);
         // 3) Emit movement events into the timeline so it reflects real motion.
-        if (moved.length) {
-          const moveEvents = moved.map((m) => ({
-            id: eid(),
-            time: nowStr(),
-            agentId: m.agentId,
-            agentName: m.agentName,
-            role: roleOf(m.agentId),
-            message: `walked to ${zoneName(m.toZone)}.`,
-            kind: "info" as const,
-          }));
-          next = { ...next, events: [...moveEvents, ...next.events].slice(0, 40) };
-        }
+        const moveEvents = moved.map((m) => ({
+          id: eid(),
+          time: nowStr(),
+          agentId: m.agentId,
+          agentName: m.agentName,
+          role: roleOf(m.agentId),
+          message: `walked to ${zoneName(m.toZone)}.`,
+          kind: "info" as const,
+        }));
+        // 4) Autonomous chatter: 1-2 agents "say" something in-character.
+        const chatterAgents = [...next.agents]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 1 + Math.floor(Math.random() * 2));
+        const chatterEvents = chatterAgents.map((a) => ({
+          id: eid(),
+          time: nowStr(),
+          agentId: a.id,
+          agentName: a.name,
+          role: a.role,
+          message: generateChatter(a.id, a.state),
+          kind: "info" as const,
+        }));
+        next = {
+          ...next,
+          events: [...moveEvents, ...chatterEvents, ...next.events].slice(0, 40),
+        };
         return next;
       });
     }, 2200);
@@ -212,7 +230,11 @@ export default function App() {
 
           {/* Inspector overlays (agent takes priority over zone) */}
           {selectedAgent ? (
-            <AgentInspector agent={selectedAgent} onClose={() => setSelectedAgentId(null)} />
+            <AgentInspector
+              agent={selectedAgent}
+              onClose={() => setSelectedAgentId(null)}
+              onChat={() => setChatAgentId(selectedAgent.id)}
+            />
           ) : selectedZone ? (
             <ZoneInspector
               zone={selectedZone}
@@ -221,6 +243,14 @@ export default function App() {
               onClose={() => setSelectedZoneId(null)}
             />
           ) : null}
+
+          {/* Agent chat panel */}
+          {chatAgent && (
+            <AgentChat
+              agent={chatAgent}
+              onClose={() => setChatAgentId(null)}
+            />
+          )}
 
           {/* Mobile panel toggle */}
           <button

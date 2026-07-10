@@ -237,6 +237,21 @@ body {
   animation: activityPop 0.5s ease-out;
 }
 
+/* Chat typing dots */
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+  30% { opacity: 1; transform: translateY(-4px); }
+}
+
+/* Vignette overlay for premium atmosphere */
+.scene-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%);
+  z-index: 9999;
+}
+
 /* Agent transition between grid positions */
 .agent-mover {
   transition: left 1.1s linear, top 1.1s linear;

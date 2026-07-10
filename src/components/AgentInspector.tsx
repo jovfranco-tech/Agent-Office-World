@@ -9,10 +9,12 @@ import { getAgentPet } from "../data/codexPetsManifest";
 import { getZone } from "../data/officeZones";
 import { animationForState } from "../lib/agentStateAnimation";
 import { spritesheetUrlFor, isPetAvailable } from "../lib/codexPetSprites";
+import { getPersonality } from "../data/agentPersonalities";
 
 interface Props {
   agent: Agent | null;
   onClose: () => void;
+  onChat?: () => void;
 }
 
 const STATE_COLORS: Record<string, string> = {
@@ -37,7 +39,7 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-export default function AgentInspector({ agent, onClose }: Props) {
+export default function AgentInspector({ agent, onClose, onChat }: Props) {
   if (!agent) return null;
   const mapping = getAgentPet(agent.id);
   const accent = mapping?.accent ?? "#3b82f6";
@@ -46,6 +48,7 @@ export default function AgentInspector({ agent, onClose }: Props) {
   const anim = animationForState(agent.state);
   const stateColor = STATE_COLORS[agent.state] ?? "#94a3b8";
   const available = isPetAvailable(agent.petSlug);
+  const personality = getPersonality(agent.id);
 
   return (
     <div
@@ -70,9 +73,26 @@ export default function AgentInspector({ agent, onClose }: Props) {
             {emoji} {agent.role}
           </div>
         </div>
-        <button className="btn btn-ghost" onClick={onClose} style={{ padding: "2px 8px" }} aria-label="Close">
-          ✕
-        </button>
+        <div style={{ display: "flex", gap: 4 }}>
+          {onChat && (
+            <button
+              className="btn btn-primary"
+              onClick={onChat}
+              style={{ padding: "4px 10px", fontSize: 11 }}
+              title={`Chat with ${agent.name}`}
+            >
+              💬 Chat
+            </button>
+          )}
+          <button className="btn btn-ghost" onClick={onClose} style={{ padding: "2px 8px" }} aria-label="Close">
+            ✕
+          </button>
+        </div>
+      </div>
+
+      {/* Personality tagline */}
+      <div style={{ fontSize: 11, color: "var(--text-muted)", fontStyle: "italic", marginTop: 6, lineHeight: 1.4 }}>
+        {personality.tagline}
       </div>
 
       {/* Sprite preview */}
