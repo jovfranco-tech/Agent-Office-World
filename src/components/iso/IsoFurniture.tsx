@@ -98,8 +98,8 @@ export const IsoCommandWall = memo(function IsoCommandWall({ f, tile, s = 1 }: P
   const screens = 6;
   return (
     <div style={{ position: "relative", width: w, height: tile.h * 1.8 * s, transform: "translate(-50%,-82%)" }}>
-      {/* glow backdrop */}
-      <div style={{ position: "absolute", inset: -8, background: "radial-gradient(ellipse at center, rgba(34,211,238,0.18) 0%, transparent 70%)", borderRadius: 12 }} />
+      {/* glow backdrop — intensified for WOW factor */}
+      <div style={{ position: "absolute", inset: -16, background: "radial-gradient(ellipse at center, rgba(34,211,238,0.3) 0%, rgba(34,211,238,0.08) 40%, transparent 75%)", borderRadius: 16, filter: "blur(4px)" }} />
       {Array.from({ length: screens }).map((_, i) => (
         <div key={i} style={{
           position: "absolute",

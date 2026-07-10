@@ -156,6 +156,13 @@ export default function OfficeSceneV2({
           );
         })}
       </div>
+      {/* Atmospheric vignette — frames the office, adds cinematic depth */}
+      <div
+        className="scene-vignette"
+        style={{
+          borderRadius: 0,
+        }}
+      />
     </div>
   );
 }

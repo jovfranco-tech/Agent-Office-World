@@ -1,9 +1,9 @@
 /**
- * OfficeSceneV2Floor — the base floor for V2.
+ * OfficeSceneV2Floor — premium floor for V3.
  *
- * A warm, continuous office floor (not flat black) with a subtle tile texture.
- * Zone tints are applied very faintly (~12% opacity) so zones differentiate
- * slightly by floor material but are READ via furniture, not paint.
+ * Rich layered floor: warm base gradient → subtle tile pattern → per-zone
+ * warm tint → soft inner glow → luminous perimeter edge. Reads as a real
+ * office floor, not a flat dark plane.
  */
 import { memo } from "react";
 import { V2_ZONES, V2_GRID } from "../data/officeSceneV2Layout";
@@ -24,7 +24,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
   );
   return (
     <>
-      {/* Base floor — warm dark, not flat black */}
+      {/* Base floor — warm layered gradient (not flat) */}
       <div
         style={{
           position: "absolute",
@@ -34,22 +34,33 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "linear-gradient(135deg, #1e2330 0%, #1a1f2b 50%, #161a24 100%)",
-          boxShadow: "inset 0 0 40px rgba(0,0,0,0.35)",
+            "radial-gradient(ellipse at 60% 30%, #252b3a 0%, #1d2230 40%, #171b26 70%, #121620 100%)",
+          boxShadow: "inset 0 0 60px rgba(0,0,0,0.4)",
         }}
       >
-        {/* Subtle floor tile texture */}
+        {/* Tile pattern — subtle warm lines like real office flooring */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)",
-            backgroundSize: `${tile.w / 2}px ${tile.h / 2}px`,
+              "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+            backgroundSize: `${tile.w}px ${tile.h}px`,
+            opacity: 0.7,
+          }}
+        />
+        {/* Warm ambient glow from center-top (like ceiling lights) */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "radial-gradient(ellipse 60% 40% at 50% 20%, rgba(255,240,210,0.04) 0%, transparent 70%)",
           }}
         />
       </div>
-      {/* Zone tints — very faint */}
+
+      {/* Zone tints — warm, subtle, each with a hint of its accent */}
       {V2_ZONES.map((z) => {
         const box = rectToCssBox(z.rect, tile, originX, originY);
         return (
@@ -62,14 +73,15 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
               width: box.width,
               height: box.height,
               clipPath: box.clipPath,
-              background: z.tint,
-              opacity: 0.5,
+              background: `linear-gradient(135deg, ${z.tint} 0%, ${z.accent}08 100%)`,
+              opacity: 0.6,
               pointerEvents: "none",
             }}
           />
         );
       })}
-      {/* Soft perimeter edge */}
+
+      {/* Luminous perimeter — soft blue-white rim like premium office glass */}
       <div
         style={{
           position: "absolute",
@@ -78,7 +90,23 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           width: baseBox.width,
           height: baseBox.height,
           clipPath: baseBox.clipPath,
-          boxShadow: "inset 0 0 0 2px rgba(96,165,250,0.15)",
+          boxShadow:
+            "inset 0 0 0 2px rgba(120,160,220,0.2), inset 0 0 30px rgba(80,120,200,0.08)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Inner soft glow — adds depth/atmosphere */}
+      <div
+        style={{
+          position: "absolute",
+          left: baseBox.left,
+          top: baseBox.top,
+          width: baseBox.width,
+          height: baseBox.height,
+          clipPath: baseBox.clipPath,
+          background:
+            "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.25) 100%)",
           pointerEvents: "none",
         }}
       />
