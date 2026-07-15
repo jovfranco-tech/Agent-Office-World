@@ -1,18 +1,18 @@
 /**
- * OfficeSceneV2Furniture — renders V2 furniture using CUSTOM SVG components.
+ * OfficeSceneV2Furniture — Kenney sprites + aggressive depth treatment.
  *
- * Replaced flat Kenney PNGs with IsoSVG.tsx — dimensional isometric furniture
- * with top/left/right faces, consistent lighting, and cohesive palette.
- * This is the upgrade that breaks the "flat sprites" ceiling toward 9+.
+ * Strategy: use the recognizable Kenney PNGs (they read as furniture) but
+ * wrap each one with: contact shadow SVG + ambient occlusion + warm unifying
+ * filter + rim light. The SVG layer underneath provides the 3D grounding that
+ * flat PNGs lack, without sacrificing recognizability.
  */
 import { memo } from "react";
 import { V2_FURNITURE, type V2Furniture } from "../data/officeSceneV2Layout";
+import { spriteUrl, deskExtras, hasSprite } from "../data/officeSpriteMap";
 import {
-  SvgDesk, SvgDualDesk, SvgChair, SvgMeetingTable, SvgReceptionDesk,
-  SvgCommandWall, SvgSofa, SvgCoffeeTable, SvgCoffeeMachine,
-  SvgBookshelf, SvgWhiteboard, SvgServerRack, SvgFilingCabinet,
-  SvgPlant, SvgFloorLamp, SvgGlassPartition, SvgRug, SvgWallSign,
+  SvgCommandWall, SvgGlassPartition, SvgRug, SvgWallSign,
 } from "./iso/IsoSVG";
+import { renderIsoPiece } from "./iso/IsoFurniture";
 import { gridCenterToScreen, DEFAULT_TILE, type TileSize } from "../lib/isometric";
 
 interface Props {
@@ -21,7 +21,27 @@ interface Props {
   originY: number;
 }
 
-/** Render a furniture piece as SVG. */
+/** Projected shadow SVG drawn under the furniture sprite. */
+function GroundShadow({ w, h }: { w: number; h: number }) {
+  return (
+    <svg
+      width={w * 1.3}
+      height={h * 0.5}
+      viewBox={`0 0 ${w * 1.3} ${h * 0.5}`}
+      style={{ position: "absolute", bottom: -h * 0.1, left: "50%", transform: "translateX(-50%)", pointerEvents: "none", zIndex: -1 }}
+    >
+      <defs>
+        <radialGradient id={`shadow-${w}-${h}`}>
+          <stop offset="0%" stopColor="rgba(50,38,20,0.35)" />
+          <stop offset="50%" stopColor="rgba(50,38,20,0.12)" />
+          <stop offset="100%" stopColor="rgba(50,38,20,0)" />
+        </radialGradient>
+      </defs>
+      <ellipse cx={w * 0.65} cy={h * 0.25} rx={w * 0.6} ry={h * 0.22} fill={`url(#shadow-${w}-${h})`} />
+    </svg>
+  );
+}
+
 function FurnitureItem({
   f,
   tile,
@@ -40,94 +60,125 @@ function FurnitureItem({
   const spanW = f.w ?? 1;
   const spanH = f.h ?? 1;
 
-  // Rug: centered on span, behind everything
+  // Rugs — SVG, behind everything
   if (f.type === "rug") {
     const spanPos = gridCenterToScreen(f.x + spanW / 2, f.y + spanH / 2, tile);
     return (
       <div style={{ position: "absolute", left: spanPos.x - originX, top: spanPos.y - originY, transform: "translate(-50%, -50%)", zIndex: depth, pointerEvents: "none" }}>
-        <SvgRug size={tile.w * 1.5} spanW={spanW} spanH={spanH} />
+        <SvgRug size={tile.w * 1.8} spanW={spanW} spanH={spanH} />
       </div>
     );
   }
 
-  // Map furniture type → SVG component with scale
-  const SCALE = 1.5;
-  let svg: React.ReactNode = null;
-  const s = tile.w * SCALE;
-
-  switch (f.type) {
-    case "desk":
-      svg = <SvgDesk size={s} />;
-      break;
-    case "dual-monitor-desk":
-      svg = <SvgDualDesk size={s} />;
-      break;
-    case "chair":
-      svg = <SvgChair size={s * 0.7} />;
-      break;
-    case "meeting-table":
-      svg = <SvgMeetingTable size={s * (1 + (spanW - 1) * 0.4)} />;
-      break;
-    case "reception-desk":
-      svg = <SvgReceptionDesk size={s * 1.3} />;
-      break;
-    case "command-wall":
-      svg = <SvgCommandWall size={s * (1.5 + (spanW - 1) * 0.3)} />;
-      break;
-    case "sofa":
-      svg = <SvgSofa size={s * 1.1} />;
-      break;
-    case "coffee-table":
-      svg = <SvgCoffeeTable size={s * 0.8} />;
-      break;
-    case "coffee-machine":
-      svg = <SvgCoffeeMachine size={s * 0.6} />;
-      break;
-    case "bookshelf":
-      svg = <SvgBookshelf size={s * 0.75} />;
-      break;
-    case "whiteboard":
-      svg = <SvgWhiteboard size={s} />;
-      break;
-    case "server-rack":
-      svg = <SvgServerRack size={s * 0.7} />;
-      break;
-    case "filing-cabinet":
-      svg = <SvgFilingCabinet size={s * 0.65} />;
-      break;
-    case "plant":
-      svg = <SvgPlant size={s * 0.7} />;
-      break;
-    case "floor-lamp":
-      svg = <SvgFloorLamp size={s * 0.55} />;
-      break;
-    case "glass-partition":
-      svg = <SvgGlassPartition size={s} spanW={spanW} />;
-      break;
-    case "divider":
-      svg = <SvgGlassPartition size={s * 0.6} spanW={spanW} />;
-      break;
-    case "wall-sign":
-      svg = <SvgWallSign size={s * 1.2} label={f.label ?? "AGENT OFFICE"} />;
-      break;
-    default:
-      svg = null;
+  // Command wall — SVG (complex multi-screen with LEDs)
+  if (f.type === "command-wall") {
+    return (
+      <div style={{ position: "absolute", left, top, transform: "translate(-50%, -75%)", zIndex: depth, pointerEvents: "none", filter: "drop-shadow(0 8px 16px rgba(34,211,238,0.15))" }}>
+        <SvgCommandWall size={tile.w * (2 + (spanW - 1) * 0.3)} />
+      </div>
+    );
   }
 
-  if (!svg) return null;
+  // Glass partitions — SVG
+  if (f.type === "glass-partition" || f.type === "divider") {
+    return (
+      <div style={{ position: "absolute", left, top, transform: "translate(-50%, -70%)", zIndex: depth, pointerEvents: "none" }}>
+        <SvgGlassPartition size={tile.w * 1.2} spanW={spanW} />
+      </div>
+    );
+  }
 
+  // Wall sign — SVG
+  if (f.type === "wall-sign") {
+    return (
+      <div style={{ position: "absolute", left, top, transform: "translate(-50%, -85%)", zIndex: depth, pointerEvents: "none" }}>
+        <SvgWallSign size={tile.w * 1.8} label={f.label ?? "AGENT OFFICE"} />
+      </div>
+    );
+  }
+
+  // Kenney sprite furniture — recognizable + depth treatment
+  if (hasSprite(f.type)) {
+    const url = spriteUrl(f.type, "right");
+    const extras = deskExtras(f.type);
+    const SCALE = 2.0;
+    const spriteW = tile.w * SCALE;
+    const spriteH = tile.h * SCALE * 1.3;
+    const isScreen = f.type === "presentation-screen";
+
+    return (
+      <div
+        style={{
+          position: "absolute",
+          left,
+          top,
+          zIndex: depth,
+          pointerEvents: "none",
+        }}
+      >
+        {/* Ground shadow SVG (3D grounding) */}
+        <div style={{ position: "absolute", bottom: -4, left: "50%", transform: "translateX(-50%)", width: spriteW, height: spriteH * 0.3 }}>
+          <GroundShadow w={spriteW} h={spriteH} />
+        </div>
+        {/* The sprite itself — scaled + filtered for depth + cohesion */}
+        <div
+          style={{
+            transform: `translate(-50%, -100%) scale(${SCALE})`,
+            transformOrigin: "bottom center",
+            filter: isScreen
+              ? "drop-shadow(0 4px 8px rgba(0,0,0,0.3)) brightness(1.2) saturate(1.5)"
+              : "drop-shadow(1px 3px 5px rgba(50,38,18,0.3)) brightness(1.06) contrast(1.08) sepia(0.05) saturate(0.95)",
+          }}
+        >
+          {/* Rim light overlay — warm top glow */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: "40%",
+              background: "linear-gradient(180deg, rgba(255,245,225,0.06) 0%, transparent 100%)",
+              borderRadius: "3px 3px 0 0",
+              pointerEvents: "none",
+              mixBlendMode: "screen",
+              zIndex: 10,
+            }}
+          />
+          {url && (
+            <img
+              src={url}
+              alt={f.type}
+              style={{ imageRendering: "auto", display: "block", position: "relative" }}
+              draggable={false}
+            />
+          )}
+          {/* Monitor glow overlays for desks */}
+          {extras.map((ex, i) => (
+            <img
+              key={i}
+              src={ex}
+              alt="monitor"
+              style={{
+                position: "absolute",
+                left: i === 0 ? "20%" : "55%",
+                top: "-15%",
+                width: "35%",
+                imageRendering: "auto",
+                filter: "brightness(1.4) saturate(1.5) drop-shadow(0 0 5px rgba(59,130,246,0.5))",
+              }}
+              draggable={false}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // CSS fallback (whiteboard, server-rack)
   return (
-    <div
-      style={{
-        position: "absolute",
-        left,
-        top,
-        transform: "translate(-50%, -75%)",
-        zIndex: depth,
-        pointerEvents: "none",
-      }}
-    >
-      {svg}
+    <div style={{ position: "absolute", left, top, zIndex: depth, pointerEvents: "none" }}>
+      {renderIsoPiece(f, tile)}
     </div>
   );
 }
