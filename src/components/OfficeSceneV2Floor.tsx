@@ -37,8 +37,8 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "radial-gradient(ellipse at 55% 35%, #e8e2d6 0%, #ddd6c8 30%, #cec6b6 65%, #b8b0a0 100%)",
-          boxShadow: "inset 0 0 60px rgba(80,70,50,0.15)",
+            "radial-gradient(ellipse at 55% 35%, #ece5d8 0%, #ddd5c6 25%, #ccc3b2 55%, #b5ac9a 85%, #a39a88 100%)",
+          boxShadow: "inset 0 0 70px rgba(70,55,30,0.18)",
         }}
       >
         {/* Concrete grain noise */}
@@ -48,7 +48,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
             inset: 0,
             backgroundImage:
               "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' /%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")",
-            opacity: 0.06,
+            opacity: 0.1,
             mixBlendMode: "multiply",
           }}
         />
