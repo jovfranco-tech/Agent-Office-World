@@ -70,12 +70,19 @@ export default function OfficeLegend({ agents, onSelectZone }: Props) {
         <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--text-muted)", marginBottom: 6 }}>
           Roles
         </div>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
           {ROLE_FILTERS.map((r) => (
             <span
               key={r.role}
               className="chip"
-              style={{ fontSize: 10, padding: "2px 6px", borderColor: `${r.accent}55`, color: r.accent }}
+              style={{
+                fontSize: 11,
+                padding: "3px 8px",
+                borderColor: `${r.accent}77`,
+                background: `${r.accent}14`,
+                color: r.accent,
+                fontWeight: 600,
+              }}
               title={`${r.role} → pet: ${r.petSlug}`}
             >
               {r.emoji} {r.role}

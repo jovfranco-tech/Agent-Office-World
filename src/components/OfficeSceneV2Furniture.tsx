@@ -80,11 +80,13 @@ function FurnitureItem({
     const SPRITE_SCALE = 1.9;
     // Atmospheric depth: objects further "back" (lower x+y) are slightly dimmer
     const depthFactor = Math.min(1, (f.x + f.y) / 40);
-    const atmoBright = 0.92 + depthFactor * 0.12; // 0.92 (far) to 1.04 (near)
+    const atmoBright = 0.94 + depthFactor * 0.10; // 0.94 (far) to 1.04 (near)
     const isScreen = f.type === "command-wall" || f.type === "presentation-screen";
+    // Unified warm lighting: all furniture gets the same sepia/saturation treatment
+    // so nothing looks out of place. Screens break the rule intentionally (vivid).
     const depthFilter = isScreen
-      ? `drop-shadow(0 6px 12px rgba(0,0,0,0.55)) brightness(${atmoBright + 0.15}) saturate(1.4)`
-      : `drop-shadow(0 5px 8px rgba(0,0,0,0.5)) brightness(${atmoBright}) contrast(1.1) saturate(0.9) sepia(0.08)`;
+      ? `drop-shadow(0 6px 12px rgba(0,0,0,0.55)) brightness(${atmoBright + 0.18}) saturate(1.45) hue-rotate(-3deg)`
+      : `drop-shadow(0 5px 8px rgba(0,0,0,0.5)) brightness(${atmoBright}) contrast(1.12) saturate(0.85) sepia(0.12) hue-rotate(-2deg)`;
     return (
       <div
         style={{
