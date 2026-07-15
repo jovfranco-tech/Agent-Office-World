@@ -54,7 +54,6 @@ function AgentSpriteImpl({
   const pos = gridCenterToScreen(rx, ry, tile);
   const left = pos.x - originX;
   const top = pos.y - originY;
-  const depth = Math.round(rx + ry);
   const mapping = getAgentPet(agent.id);
   const accent = mapping?.accent ?? "#3b82f6";
   const animation = agent.animationOverride ?? animationForState(agent.state);

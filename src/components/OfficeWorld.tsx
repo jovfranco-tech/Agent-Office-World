@@ -177,6 +177,7 @@ export default function OfficeWorld({
               originX={originX}
               originY={originY}
               size={spriteSize}
+              zIndex={1000 + Math.round(agent.gridX + agent.gridY)}
               isSelected={selectedAgentId === agent.id}
               isDimmed={isDimmed}
               showLabels={effectiveShowLabels}
