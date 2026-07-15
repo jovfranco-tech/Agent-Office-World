@@ -117,7 +117,22 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.25) 100%)",
+            "radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.4) 100%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Atmospheric haze — subtle warm fog in the back, cool in front */}
+      <div
+        style={{
+          position: "absolute",
+          left: baseBox.left,
+          top: baseBox.top,
+          width: baseBox.width,
+          height: baseBox.height,
+          clipPath: baseBox.clipPath,
+          background:
+            "linear-gradient(160deg, rgba(40,35,30,0.12) 0%, transparent 40%, transparent 60%, rgba(15,20,35,0.12) 100%)",
           pointerEvents: "none",
         }}
       />

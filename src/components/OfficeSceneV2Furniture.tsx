@@ -99,30 +99,44 @@ function FurnitureItem({
           filter: depthFilter,
         }}
       >
-        {/* Contact shadow ellipse — darker, more defined for grounding */}
+        {/* Ambient occlusion — wide soft shadow for grounding */}
         <div
           style={{
             position: "absolute",
-            bottom: -3,
+            bottom: -6,
             left: "50%",
-            width: "75%",
-            height: 10,
+            width: "110%",
+            height: 16,
             transform: "translateX(-50%)",
-            background: "radial-gradient(ellipse, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 50%, transparent 75%)",
+            background: "radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 50%, transparent 80%)",
             borderRadius: "50%",
             pointerEvents: "none",
-            filter: "blur(1px)",
+            filter: "blur(3px)",
           }}
         />
-        {/* Subtle top highlight (rim light from above-left) */}
+        {/* Contact shadow — tight dark ellipse directly under furniture */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: -2,
+            left: "50%",
+            width: "70%",
+            height: 8,
+            transform: "translateX(-50%)",
+            background: "radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 70%)",
+            borderRadius: "50%",
+            pointerEvents: "none",
+          }}
+        />
+        {/* Rim light — top edge highlight (warm overhead light) */}
         <div
           style={{
             position: "absolute",
             top: 0,
             left: 0,
             right: 0,
-            height: "30%",
-            background: "linear-gradient(180deg, rgba(255,250,240,0.08) 0%, transparent 100%)",
+            height: "35%",
+            background: "linear-gradient(180deg, rgba(255,245,225,0.1) 0%, transparent 100%)",
             borderRadius: "4px 4px 0 0",
             pointerEvents: "none",
             mixBlendMode: "screen",

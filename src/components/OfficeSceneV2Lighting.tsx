@@ -1,10 +1,12 @@
 /**
- * OfficeSceneV2Lighting — focal glow for the V2 scene.
+ * OfficeSceneV2Lighting — premium lighting system.
  *
- * Draws soft radial glows under key zones (command center blue, open workspace
- * blue, break area warm) and per-agent monitor glow when an agent is working
- * at a desk. Integrates the old MonitorGlow concept but in the V2 coordinate
- * space.
+ * Three layers:
+ *   1. Ceiling spotlights per zone — warm pools of light that make each zone
+ *      feel like it's lit by overhead fixtures. Different color per zone type.
+ *   2. Command center floor reflection — blue glow cast ON the floor by the
+ *      screen wall, as if light from the monitors spills onto concrete.
+ *   3. Per-agent monitor glow — pulsing light when an agent works at a desk.
  */
 import { memo } from "react";
 import type { Agent } from "../types";
@@ -32,6 +34,18 @@ const GLOW_ACTIVITIES = new Set([
   "finance-legal",
 ]);
 
+/** Zone spotlight colors — each zone type gets a distinct warm/cool light. */
+const ZONE_LIGHT: Record<string, { color: string; intensity: number }> = {
+  "command-center": { color: "34,211,238", intensity: 0.22 },
+  "engineering-pods": { color: "96,165,250", intensity: 0.14 },
+  "open-workspace": { color: "255,200,120", intensity: 0.12 },
+  "strategy-room": { color: "168,85,247", intensity: 0.14 },
+  "research-library": { color: "34,211,238", intensity: 0.10 },
+  "break-area": { color: "251,191,36", intensity: 0.16 },
+  "finance-desk": { color: "132,204,22", intensity: 0.10 },
+  "reception": { color: "245,158,11", intensity: 0.14 },
+};
+
 function OfficeSceneV2LightingImpl({
   agents,
   motions,
@@ -39,33 +53,45 @@ function OfficeSceneV2LightingImpl({
   originX,
   originY,
 }: Props) {
-  // Zone-level focal glows
-  const zoneGlows = V2_ZONES.filter(
-    (z) =>
-      z.id === "command-center" ||
-      z.id === "open-workspace" ||
-      z.id === "break-area"
-  ).map((z) => {
+  // Layer 1: Ceiling spotlights — warm pools of light per zone
+  const spotlights = V2_ZONES.map((z) => {
     const bounds = gridRectBounds(z.rect, tile);
     const cx = (bounds.minX + bounds.maxX) / 2;
     const cy = (bounds.minY + bounds.maxY) / 2;
-    const color =
-      z.id === "command-center"
-        ? "rgba(34,211,238,0.15)"
-        : z.id === "break-area"
-        ? "rgba(250,220,150,0.10)"
-        : "rgba(96,165,250,0.08)";
-    return { left: cx - originX, top: cy - originY, w: bounds.width, h: bounds.height, color, key: z.id };
+    const light = ZONE_LIGHT[z.id] ?? { color: "255,200,120", intensity: 0.08 };
+    return {
+      left: cx - originX,
+      top: cy - originY,
+      w: bounds.width * 1.1,
+      h: bounds.height * 1.3,
+      color: light.color,
+      intensity: light.intensity,
+      key: z.id,
+    };
   });
 
-  // Per-agent monitor glow (when settled and working)
+  // Layer 2: Command center floor reflection — blue light spilling onto floor
+  const cmdZone = V2_ZONES.find((z) => z.id === "command-center");
+  const cmdReflection = cmdZone
+    ? (() => {
+        const bounds = gridRectBounds(cmdZone.rect, tile);
+        return {
+          left: (bounds.minX + bounds.maxX) / 2 - originX,
+          top: bounds.minY + bounds.height * 0.35 - originY,
+          w: bounds.width * 0.8,
+          h: bounds.height * 0.5,
+        };
+      })()
+    : null;
+
+  // Layer 3: Per-agent monitor glow
   const agentGlows: { left: number; top: number; color: string; key: string }[] = [];
   for (const a of agents) {
     const m = motions.get(a.id);
     if (m?.isMoving) continue;
     if (!GLOW_ACTIVITIES.has(a.activity ?? "desk-work")) continue;
     const mx = a.gridX;
-    const my = a.gridY - 1; // monitor is behind the agent
+    const my = a.gridY - 1;
     const pos = gridCenterToScreen(mx, my, tile);
     const accent =
       a.activity === "command-center" || a.activity === "command-monitoring"
@@ -78,24 +104,48 @@ function OfficeSceneV2LightingImpl({
 
   return (
     <>
-      {/* Zone focal glows */}
-      {zoneGlows.map((g) => (
+      {/* Layer 1: Ceiling spotlights */}
+      {spotlights.map((s) => (
         <div
-          key={g.key}
+          key={s.key}
           style={{
             position: "absolute",
-            left: g.left,
-            top: g.top,
-            width: g.w,
-            height: g.h,
+            left: s.left,
+            top: s.top,
+            width: s.w,
+            height: s.h,
             transform: "translate(-50%, -50%)",
-            background: `radial-gradient(ellipse at center, ${g.color} 0%, transparent 70%)`,
+            background: `radial-gradient(ellipse at center, rgba(${s.color},${s.intensity}) 0%, rgba(${s.color},${s.intensity * 0.3}) 40%, transparent 70%)`,
             pointerEvents: "none",
-            zIndex: 50,
+            zIndex: 45,
+            mixBlendMode: "screen",
           }}
         />
       ))}
-      {/* Per-agent monitor glow */}
+
+      {/* Layer 2: Command center floor reflection */}
+      {cmdReflection && (
+        <>
+          <div
+            style={{
+              position: "absolute",
+              left: cmdReflection.left,
+              top: cmdReflection.top,
+              width: cmdReflection.w,
+              height: cmdReflection.h,
+              transform: "translate(-50%, -50%)",
+              background:
+                "radial-gradient(ellipse at center top, rgba(34,211,238,0.18) 0%, rgba(34,211,238,0.06) 40%, transparent 70%)",
+              pointerEvents: "none",
+              zIndex: 46,
+              mixBlendMode: "screen",
+              filter: "blur(3px)",
+            }}
+          />
+        </>
+      )}
+
+      {/* Layer 3: Per-agent monitor glow */}
       {agentGlows.map((g) => (
         <div
           key={g.key}
@@ -103,11 +153,11 @@ function OfficeSceneV2LightingImpl({
             position: "absolute",
             left: g.left,
             top: g.top,
-            width: 24,
-            height: 24,
+            width: 28,
+            height: 28,
             transform: "translate(-50%, -85%)",
             borderRadius: "50%",
-            background: `radial-gradient(circle, ${g.color}bb 0%, ${g.color}33 45%, transparent 75%)`,
+            background: `radial-gradient(circle, ${g.color}cc 0%, ${g.color}33 45%, transparent 75%)`,
             filter: "blur(1px)",
             pointerEvents: "none",
             zIndex: 150,
