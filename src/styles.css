@@ -243,13 +243,13 @@ body {
   30% { opacity: 1; transform: translateY(-4px); }
 }
 
-/* Vignette overlay for premium atmosphere */
+/* Vignette overlay — softer for light floor */
 .scene-vignette {
-  position: absolute;
+  position: "absolute";
   inset: 0;
-  pointer-events: none;
-  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.35) 100%);
-  z-index: 9999;
+  pointerEvents: "none";
+  background: "radial-gradient(ellipse at center, transparent 50%, rgba(20,15,10,0.2) 100%)";
+  zIndex: 9999;
 }
 
 /* Command center scanline animation */

@@ -80,13 +80,13 @@ function FurnitureItem({
     const SPRITE_SCALE = 1.9;
     // Atmospheric depth: objects further "back" (lower x+y) are slightly dimmer
     const depthFactor = Math.min(1, (f.x + f.y) / 40);
-    const atmoBright = 0.94 + depthFactor * 0.10; // 0.94 (far) to 1.04 (near)
+    const atmoBright = 0.96 + depthFactor * 0.06;
     const isScreen = f.type === "command-wall" || f.type === "presentation-screen";
-    // Unified warm lighting: all furniture gets the same sepia/saturation treatment
-    // so nothing looks out of place. Screens break the rule intentionally (vivid).
+    // Light floor: furniture needs STRONGER shadows (more visible on light bg)
+    // and slightly more saturation to pop against the warm floor.
     const depthFilter = isScreen
-      ? `drop-shadow(0 6px 12px rgba(0,0,0,0.55)) brightness(${atmoBright + 0.18}) saturate(1.45) hue-rotate(-3deg)`
-      : `drop-shadow(0 5px 8px rgba(0,0,0,0.5)) brightness(${atmoBright}) contrast(1.12) saturate(0.85) sepia(0.12) hue-rotate(-2deg)`;
+      ? `drop-shadow(0 6px 14px rgba(40,30,15,0.4)) brightness(${atmoBright + 0.2}) saturate(1.5) hue-rotate(-3deg)`
+      : `drop-shadow(0 5px 10px rgba(40,30,15,0.35)) brightness(${atmoBright}) contrast(1.08) saturate(0.95) sepia(0.06)`;
     return (
       <div
         style={{
@@ -99,36 +99,36 @@ function FurnitureItem({
           filter: depthFilter,
         }}
       >
-        {/* Ambient occlusion — wide soft shadow for grounding */}
+        {/* Ambient occlusion — wider, more visible on light floor */}
         <div
           style={{
             position: "absolute",
-            bottom: -6,
+            bottom: -8,
             left: "50%",
-            width: "110%",
-            height: 16,
+            width: "115%",
+            height: 20,
             transform: "translateX(-50%)",
-            background: "radial-gradient(ellipse, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.1) 50%, transparent 80%)",
+            background: "radial-gradient(ellipse, rgba(60,45,25,0.3) 0%, rgba(60,45,25,0.08) 50%, transparent 80%)",
             borderRadius: "50%",
             pointerEvents: "none",
-            filter: "blur(3px)",
+            filter: "blur(4px)",
           }}
         />
-        {/* Contact shadow — tight dark ellipse directly under furniture */}
+        {/* Contact shadow — tight dark ellipse */}
         <div
           style={{
             position: "absolute",
-            bottom: -2,
+            bottom: -3,
             left: "50%",
-            width: "70%",
-            height: 8,
+            width: "72%",
+            height: 10,
             transform: "translateX(-50%)",
-            background: "radial-gradient(ellipse, rgba(0,0,0,0.5) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse, rgba(50,40,20,0.35) 0%, transparent 70%)",
             borderRadius: "50%",
             pointerEvents: "none",
           }}
         />
-        {/* Rim light — top edge highlight (warm overhead light) */}
+        {/* Rim light — warm top edge highlight */}
         <div
           style={{
             position: "absolute",
@@ -136,7 +136,7 @@ function FurnitureItem({
             left: 0,
             right: 0,
             height: "35%",
-            background: "linear-gradient(180deg, rgba(255,245,225,0.1) 0%, transparent 100%)",
+            background: "linear-gradient(180deg, rgba(255,250,235,0.12) 0%, transparent 100%)",
             borderRadius: "4px 4px 0 0",
             pointerEvents: "none",
             mixBlendMode: "screen",

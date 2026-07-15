@@ -36,14 +36,14 @@ const GLOW_ACTIVITIES = new Set([
 
 /** Zone spotlight colors — each zone type gets a distinct warm/cool light. */
 const ZONE_LIGHT: Record<string, { color: string; intensity: number }> = {
-  "command-center": { color: "34,211,238", intensity: 0.22 },
-  "engineering-pods": { color: "96,165,250", intensity: 0.14 },
-  "open-workspace": { color: "255,200,120", intensity: 0.12 },
-  "strategy-room": { color: "168,85,247", intensity: 0.14 },
-  "research-library": { color: "34,211,238", intensity: 0.10 },
-  "break-area": { color: "251,191,36", intensity: 0.16 },
-  "finance-desk": { color: "132,204,22", intensity: 0.10 },
-  "reception": { color: "245,158,11", intensity: 0.14 },
+  "command-center": { color: "34,211,238", intensity: 0.14 },
+  "engineering-pods": { color: "96,165,250", intensity: 0.08 },
+  "open-workspace": { color: "255,210,140", intensity: 0.08 },
+  "strategy-room": { color: "168,85,247", intensity: 0.09 },
+  "research-library": { color: "34,211,238", intensity: 0.07 },
+  "break-area": { color: "251,191,36", intensity: 0.10 },
+  "finance-desk": { color: "132,204,22", intensity: 0.07 },
+  "reception": { color: "245,158,11", intensity: 0.09 },
 };
 
 function OfficeSceneV2LightingImpl({

@@ -1,9 +1,12 @@
 /**
- * OfficeSceneV2Floor — premium floor for V3.
+ * OfficeSceneV2Floor — LIGHT premium floor.
  *
- * Rich layered floor: warm base gradient → subtle tile pattern → per-zone
- * warm tint → soft inner glow → luminous perimeter edge. Reads as a real
- * office floor, not a flat dark plane.
+ * The #1 change for 9/10: a LIGHT floor (warm off-white polished concrete),
+ * not dark. Every premium isometric office reference uses light floors —
+ * dark floors read as "game board", light floors read as "real office".
+ *
+ * Layers: warm off-white base → noise texture → subtle tile grid →
+ * specular → per-zone warm tint → soft edges.
  */
 import { memo } from "react";
 import { V2_ZONES, V2_GRID } from "../data/officeSceneV2Layout";
@@ -24,7 +27,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
   );
   return (
     <>
-      {/* Base floor — polished concrete: warm midtone + deep edges + specular */}
+      {/* Base floor — warm off-white polished concrete (LIGHT, not dark) */}
       <div
         style={{
           position: "absolute",
@@ -34,44 +37,44 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "radial-gradient(ellipse at 55% 35%, #2c3142 0%, #252a38 30%, #1c2030 60%, #14181f 100%)",
-          boxShadow: "inset 0 0 80px rgba(0,0,0,0.45)",
+            "radial-gradient(ellipse at 55% 35%, #e8e2d6 0%, #ddd6c8 30%, #cec6b6 65%, #b8b0a0 100%)",
+          boxShadow: "inset 0 0 60px rgba(80,70,50,0.15)",
         }}
       >
-        {/* Polished concrete texture — fine grain noise */}
+        {/* Concrete grain noise */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='40' height='40' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")",
-            opacity: 0.08,
-            mixBlendMode: "overlay",
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' /%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")",
+            opacity: 0.06,
+            mixBlendMode: "multiply",
           }}
         />
-        {/* Tile grid — warmer lines, like real office flooring */}
+        {/* Tile grid — warm subtle lines */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(180,170,150,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(180,170,150,0.035) 1px, transparent 1px)",
+              "linear-gradient(rgba(140,130,110,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(140,130,110,0.06) 1px, transparent 1px)",
             backgroundSize: `${tile.w}px ${tile.h}px`,
-            opacity: 0.8,
+            opacity: 0.9,
           }}
         />
-        {/* Specular highlight — polished floor reflection */}
+        {/* Specular highlight — polished reflection from ceiling lights */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse 50% 35% at 50% 25%, rgba(255,245,220,0.06) 0%, transparent 60%)",
+              "radial-gradient(ellipse 45% 30% at 50% 25%, rgba(255,250,240,0.35) 0%, transparent 60%)",
           }}
         />
       </div>
 
-      {/* Zone tints — warm, subtle, each with a hint of its accent */}
+      {/* Zone tints — very subtle warm differentiation on the light floor */}
       {V2_ZONES.map((z) => {
         const box = rectToCssBox(z.rect, tile, originX, originY);
         return (
@@ -84,15 +87,15 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
               width: box.width,
               height: box.height,
               clipPath: box.clipPath,
-              background: `linear-gradient(135deg, ${z.tint} 0%, ${z.accent}08 100%)`,
-              opacity: 0.6,
+              background: `linear-gradient(135deg, ${z.accent}10 0%, ${z.accent}06 100%)`,
+              opacity: 0.7,
               pointerEvents: "none",
             }}
           />
         );
       })}
 
-      {/* Luminous perimeter — soft blue-white rim like premium office glass */}
+      {/* Perimeter — soft warm edge (like baseboard / wall trim) */}
       <div
         style={{
           position: "absolute",
@@ -102,12 +105,12 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           boxShadow:
-            "inset 0 0 0 2px rgba(120,160,220,0.2), inset 0 0 30px rgba(80,120,200,0.08)",
+            "inset 0 0 0 2px rgba(160,145,120,0.25), inset 0 0 25px rgba(120,100,70,0.1)",
           pointerEvents: "none",
         }}
       />
 
-      {/* Inner soft glow — adds depth/atmosphere */}
+      {/* Edge vignette — gentle darkening at borders for depth */}
       <div
         style={{
           position: "absolute",
@@ -117,22 +120,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,0.2) 80%, rgba(0,0,0,0.4) 100%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Atmospheric haze — subtle warm fog in the back, cool in front */}
-      <div
-        style={{
-          position: "absolute",
-          left: baseBox.left,
-          top: baseBox.top,
-          width: baseBox.width,
-          height: baseBox.height,
-          clipPath: baseBox.clipPath,
-          background:
-            "linear-gradient(160deg, rgba(40,35,30,0.12) 0%, transparent 40%, transparent 60%, rgba(15,20,35,0.12) 100%)",
+            "radial-gradient(ellipse at center, transparent 55%, rgba(80,70,50,0.12) 85%, rgba(60,50,35,0.25) 100%)",
           pointerEvents: "none",
         }}
       />
@@ -143,7 +131,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
 export const OfficeSceneV2Floor = memo(OfficeSceneV2FloorImpl);
 export default OfficeSceneV2Floor;
 
-/** Compute V2 scene bounds (parallel to the old computeSceneBounds). */
+/** Compute V2 scene bounds. */
 export function computeV2SceneBounds(tile: TileSize = DEFAULT_TILE) {
   const bounds = gridRectBounds(
     { x: 0, y: 0, w: V2_GRID.w, h: V2_GRID.h },
