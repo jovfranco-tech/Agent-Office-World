@@ -275,14 +275,15 @@ export default function App() {
             style={{
               width: 280,
               flexShrink: 0,
-              background: "rgba(10,14,26,0.6)",
-              borderLeft: "1px solid var(--border-soft)",
-              backdropFilter: "blur(8px)",
-              padding: 12,
+              background: "linear-gradient(180deg, rgba(18,22,34,0.95), rgba(14,18,28,0.92))",
+              borderLeft: "1px solid rgba(96,165,250,0.15)",
+              backdropFilter: "blur(12px)",
+              padding: 14,
               overflowY: "auto",
               display: "flex",
               flexDirection: "column",
               gap: 16,
+              boxShadow: "-4px 0 24px rgba(0,0,0,0.3)",
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

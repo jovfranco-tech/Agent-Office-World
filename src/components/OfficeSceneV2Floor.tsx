@@ -24,7 +24,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
   );
   return (
     <>
-      {/* Base floor — warm layered gradient (not flat) */}
+      {/* Base floor — polished concrete: warm midtone + deep edges + specular */}
       <div
         style={{
           position: "absolute",
@@ -34,28 +34,39 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           height: baseBox.height,
           clipPath: baseBox.clipPath,
           background:
-            "radial-gradient(ellipse at 60% 30%, #252b3a 0%, #1d2230 40%, #171b26 70%, #121620 100%)",
-          boxShadow: "inset 0 0 60px rgba(0,0,0,0.4)",
+            "radial-gradient(ellipse at 55% 35%, #2c3142 0%, #252a38 30%, #1c2030 60%, #14181f 100%)",
+          boxShadow: "inset 0 0 80px rgba(0,0,0,0.45)",
         }}
       >
-        {/* Tile pattern — subtle warm lines like real office flooring */}
+        {/* Polished concrete texture — fine grain noise */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
-            backgroundSize: `${tile.w}px ${tile.h}px`,
-            opacity: 0.7,
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' /%3E%3C/filter%3E%3Crect width='40' height='40' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")",
+            opacity: 0.08,
+            mixBlendMode: "overlay",
           }}
         />
-        {/* Warm ambient glow from center-top (like ceiling lights) */}
+        {/* Tile grid — warmer lines, like real office flooring */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(180,170,150,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(180,170,150,0.035) 1px, transparent 1px)",
+            backgroundSize: `${tile.w}px ${tile.h}px`,
+            opacity: 0.8,
+          }}
+        />
+        {/* Specular highlight — polished floor reflection */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse 60% 40% at 50% 20%, rgba(255,240,210,0.04) 0%, transparent 70%)",
+              "radial-gradient(ellipse 50% 35% at 50% 25%, rgba(255,245,220,0.06) 0%, transparent 60%)",
           }}
         />
       </div>
