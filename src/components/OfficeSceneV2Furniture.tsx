@@ -1,17 +1,18 @@
 /**
- * OfficeSceneV2Furniture — renders V2 furniture using REAL Kenney CC0 sprites.
+ * OfficeSceneV2Furniture — renders V2 furniture using CUSTOM SVG components.
  *
- * For types that have a sprite PNG (desk, chair, sofa, plant, etc.), renders an
- * <img> positioned at the grid cell. For types without a sprite (walls, glass,
- * whiteboard, server-rack), falls back to the CSS Iso* components.
- *
- * Sprites are bottom-anchored: the bottom-center of the PNG aligns to the grid
- * cell center, so furniture "sits on" the floor tile.
+ * Replaced flat Kenney PNGs with IsoSVG.tsx — dimensional isometric furniture
+ * with top/left/right faces, consistent lighting, and cohesive palette.
+ * This is the upgrade that breaks the "flat sprites" ceiling toward 9+.
  */
 import { memo } from "react";
 import { V2_FURNITURE, type V2Furniture } from "../data/officeSceneV2Layout";
-import { spriteUrl, deskExtras, hasSprite } from "../data/officeSpriteMap";
-import { renderIsoPiece } from "./iso/IsoFurniture";
+import {
+  SvgDesk, SvgDualDesk, SvgChair, SvgMeetingTable, SvgReceptionDesk,
+  SvgCommandWall, SvgSofa, SvgCoffeeTable, SvgCoffeeMachine,
+  SvgBookshelf, SvgWhiteboard, SvgServerRack, SvgFilingCabinet,
+  SvgPlant, SvgFloorLamp, SvgGlassPartition, SvgRug, SvgWallSign,
+} from "./iso/IsoSVG";
 import { gridCenterToScreen, DEFAULT_TILE, type TileSize } from "../lib/isometric";
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
   originY: number;
 }
 
-/** Render a single furniture piece — sprite PNG if available, else CSS fallback. */
+/** Render a furniture piece as SVG. */
 function FurnitureItem({
   f,
   tile,
@@ -36,168 +37,106 @@ function FurnitureItem({
   const left = pos.x - originX;
   const top = pos.y - originY;
   const depth = f.x + f.y;
-
-  // Sprites that span multiple cells (rugs, big tables) use center of span.
   const spanW = f.w ?? 1;
   const spanH = f.h ?? 1;
-  const spanPos =
-    spanW > 1 || spanH > 1
-      ? gridCenterToScreen(f.x + spanW / 2, f.y + spanH / 2, tile)
-      : pos;
-  const spanLeft = spanPos.x - originX;
-  const spanTop = spanPos.y - originY;
 
-  // Rug: render first (behind), using sprite if available
+  // Rug: centered on span, behind everything
   if (f.type === "rug") {
-    const rugUrl = spriteUrl("rug");
+    const spanPos = gridCenterToScreen(f.x + spanW / 2, f.y + spanH / 2, tile);
     return (
-      <div
-        style={{
-          position: "absolute",
-          left: spanLeft,
-          top: spanTop,
-          transform: "translate(-50%, -50%)",
-          zIndex: depth,
-          pointerEvents: "none",
-        }}
-      >
-        {rugUrl ? (
-          <img
-            src={rugUrl}
-            alt="rug"
-            style={{ width: tile.w * spanW * 1.1, opacity: 0.7, imageRendering: "auto" }}
-            draggable={false}
-          />
-        ) : null}
+      <div style={{ position: "absolute", left: spanPos.x - originX, top: spanPos.y - originY, transform: "translate(-50%, -50%)", zIndex: depth, pointerEvents: "none" }}>
+        <SvgRug size={tile.w * 1.5} spanW={spanW} spanH={spanH} />
       </div>
     );
   }
 
-  // Real sprite furniture — scaled 1.8x for presence + contact shadow
-  if (hasSprite(f.type)) {
-    const url = spriteUrl(f.type, "right");
-    const extras = deskExtras(f.type);
-    const SPRITE_SCALE = 1.9;
-    // Atmospheric depth: objects further "back" (lower x+y) are slightly dimmer
-    const depthFactor = Math.min(1, (f.x + f.y) / 40);
-    const atmoBright = 0.96 + depthFactor * 0.06;
-    const isScreen = f.type === "command-wall" || f.type === "presentation-screen";
-    // Light floor: furniture needs STRONGER shadows (more visible on light bg)
-    // and slightly more saturation to pop against the warm floor.
-    const depthFilter = isScreen
-      ? `drop-shadow(0 4px 10px rgba(40,30,15,0.3)) brightness(${atmoBright + 0.2}) saturate(1.5) hue-rotate(-3deg)`
-      : `drop-shadow(0 3px 7px rgba(50,40,20,0.25)) brightness(${atmoBright}) contrast(1.06) saturate(1.0) sepia(0.04)`;
-    return (
-      <div
-        style={{
-          position: "absolute",
-          left,
-          top,
-          transform: `translate(-50%, -100%) scale(${SPRITE_SCALE})`,
-          zIndex: depth,
-          pointerEvents: "none",
-          filter: depthFilter,
-        }}
-      >
-        {/* Ambient occlusion — wider, more visible on light floor */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: -8,
-            left: "50%",
-            width: "115%",
-            height: 20,
-            transform: "translateX(-50%)",
-            background: "radial-gradient(ellipse, rgba(60,45,25,0.3) 0%, rgba(60,45,25,0.08) 50%, transparent 80%)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-            filter: "blur(4px)",
-          }}
-        />
-        {/* Contact shadow — tight dark ellipse */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: -3,
-            left: "50%",
-            width: "72%",
-            height: 10,
-            transform: "translateX(-50%)",
-            background: "radial-gradient(ellipse, rgba(50,40,20,0.35) 0%, transparent 70%)",
-            borderRadius: "50%",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Rim light — warm top edge highlight */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: "35%",
-            background: "linear-gradient(180deg, rgba(255,250,235,0.12) 0%, transparent 100%)",
-            borderRadius: "4px 4px 0 0",
-            pointerEvents: "none",
-            mixBlendMode: "screen",
-          }}
-        />
-        {url && (
-          <img
-            src={url}
-            alt={f.type}
-            style={{ imageRendering: "auto", display: "block", position: "relative" }}
-            draggable={false}
-          />
-        )}
-        {/* Monitor overlays for desks */}
-        {extras.map((ex, i) => (
-          <img
-            key={i}
-            src={ex}
-            alt="monitor"
-            style={{
-              position: "absolute",
-              left: i === 0 ? "20%" : "55%",
-              top: "-15%",
-              width: "35%",
-              imageRendering: "auto",
-              filter: "brightness(1.3) saturate(1.4) drop-shadow(0 0 4px rgba(59,130,246,0.4))",
-            }}
-            draggable={false}
-          />
-        ))}
-      </div>
-    );
+  // Map furniture type → SVG component with scale
+  const SCALE = 1.5;
+  let svg: React.ReactNode = null;
+  const s = tile.w * SCALE;
+
+  switch (f.type) {
+    case "desk":
+      svg = <SvgDesk size={s} />;
+      break;
+    case "dual-monitor-desk":
+      svg = <SvgDualDesk size={s} />;
+      break;
+    case "chair":
+      svg = <SvgChair size={s * 0.7} />;
+      break;
+    case "meeting-table":
+      svg = <SvgMeetingTable size={s * (1 + (spanW - 1) * 0.4)} />;
+      break;
+    case "reception-desk":
+      svg = <SvgReceptionDesk size={s * 1.3} />;
+      break;
+    case "command-wall":
+      svg = <SvgCommandWall size={s * (1.5 + (spanW - 1) * 0.3)} />;
+      break;
+    case "sofa":
+      svg = <SvgSofa size={s * 1.1} />;
+      break;
+    case "coffee-table":
+      svg = <SvgCoffeeTable size={s * 0.8} />;
+      break;
+    case "coffee-machine":
+      svg = <SvgCoffeeMachine size={s * 0.6} />;
+      break;
+    case "bookshelf":
+      svg = <SvgBookshelf size={s * 0.75} />;
+      break;
+    case "whiteboard":
+      svg = <SvgWhiteboard size={s} />;
+      break;
+    case "server-rack":
+      svg = <SvgServerRack size={s * 0.7} />;
+      break;
+    case "filing-cabinet":
+      svg = <SvgFilingCabinet size={s * 0.65} />;
+      break;
+    case "plant":
+      svg = <SvgPlant size={s * 0.7} />;
+      break;
+    case "floor-lamp":
+      svg = <SvgFloorLamp size={s * 0.55} />;
+      break;
+    case "glass-partition":
+      svg = <SvgGlassPartition size={s} spanW={spanW} />;
+      break;
+    case "divider":
+      svg = <SvgGlassPartition size={s * 0.6} spanW={spanW} />;
+      break;
+    case "wall-sign":
+      svg = <SvgWallSign size={s * 1.2} label={f.label ?? "AGENT OFFICE"} />;
+      break;
+    default:
+      svg = null;
   }
 
-  // CSS fallback for types without sprites (walls, glass, whiteboard, server-rack)
+  if (!svg) return null;
+
   return (
     <div
       style={{
         position: "absolute",
         left,
         top,
+        transform: "translate(-50%, -75%)",
         zIndex: depth,
         pointerEvents: "none",
       }}
     >
-      {renderIsoPiece(f, tile)}
+      {svg}
     </div>
   );
 }
 
-function OfficeSceneV2FurnitureImpl({
-  tile = DEFAULT_TILE,
-  originX,
-  originY,
-}: Props) {
-  // Rugs first (behind), then everything else depth-sorted.
+function OfficeSceneV2FurnitureImpl({ tile = DEFAULT_TILE, originX, originY }: Props) {
   const rugs = V2_FURNITURE.filter((f) => f.type === "rug");
   const rest = V2_FURNITURE.filter((f) => f.type !== "rug").sort(
     (a, b) => a.x + a.y - (b.x + b.y)
   );
-
   return (
     <>
       {rugs.map((f) => (
