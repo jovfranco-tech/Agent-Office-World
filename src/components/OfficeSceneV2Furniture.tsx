@@ -85,8 +85,8 @@ function FurnitureItem({
     // Light floor: furniture needs STRONGER shadows (more visible on light bg)
     // and slightly more saturation to pop against the warm floor.
     const depthFilter = isScreen
-      ? `drop-shadow(0 6px 14px rgba(40,30,15,0.4)) brightness(${atmoBright + 0.2}) saturate(1.5) hue-rotate(-3deg)`
-      : `drop-shadow(0 5px 10px rgba(40,30,15,0.35)) brightness(${atmoBright}) contrast(1.08) saturate(0.95) sepia(0.06)`;
+      ? `drop-shadow(0 4px 10px rgba(40,30,15,0.3)) brightness(${atmoBright + 0.2}) saturate(1.5) hue-rotate(-3deg)`
+      : `drop-shadow(0 3px 7px rgba(50,40,20,0.25)) brightness(${atmoBright}) contrast(1.06) saturate(1.0) sepia(0.04)`;
     return (
       <div
         style={{

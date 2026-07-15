@@ -74,7 +74,7 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
         />
       </div>
 
-      {/* Zone tints — very subtle warm differentiation on the light floor */}
+      {/* Zone tints — visible color differentiation on light floor */}
       {V2_ZONES.map((z) => {
         const box = rectToCssBox(z.rect, tile, originX, originY);
         return (
@@ -87,8 +87,8 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
               width: box.width,
               height: box.height,
               clipPath: box.clipPath,
-              background: `linear-gradient(135deg, ${z.accent}10 0%, ${z.accent}06 100%)`,
-              opacity: 0.7,
+              background: `linear-gradient(135deg, ${z.accent}1a 0%, ${z.accent}0a 100%)`,
+              opacity: 0.85,
               pointerEvents: "none",
             }}
           />

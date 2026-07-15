@@ -69,9 +69,10 @@ export default function ControlBar({
         gap: 8,
         flexWrap: "wrap",
         padding: "8px 12px",
-        background: "rgba(14,19,34,0.85)",
-        borderBottom: "1px solid var(--border-soft)",
-        backdropFilter: "blur(8px)",
+        background: "linear-gradient(180deg, rgba(28,32,42,0.92), rgba(20,24,34,0.88))",
+        borderBottom: "1px solid rgba(96,165,250,0.12)",
+        backdropFilter: "blur(12px)",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.2)",
       }}
       className="no-tap"
     >
