@@ -1,11 +1,15 @@
 /**
- * OfficeSceneV2Lighting — premium lighting system.
+ * OfficeSceneV2Lighting — premium lighting system, split into two layers.
  *
- * Three layers:
- *   1. Ceiling spotlights per zone — warm pools of light that make each zone
- *      feel like it's lit by overhead fixtures. Different color per zone type.
- *   2. Command center floor reflection — blue glow cast ON the floor by the
- *      screen wall, as if light from the monitors spills onto concrete.
+ * The scene renders lighting TWICE:
+ *   - layer="underlay" (before furniture/agents): zone ceiling spotlights +
+ *     command center floor reflection. These sit ON the floor, below objects.
+ *   - layer="overlay" (after furniture/agents): per-agent monitor glow that
+ *     pulses above everything, like a real screen lighting up a workstation.
+ *
+ * Three light types:
+ *   1. Ceiling spotlights per zone — warm pools that make each zone feel lit.
+ *   2. Command center floor reflection — blue glow cast ON the floor.
  *   3. Per-agent monitor glow — pulsing light when an agent works at a desk.
  */
 import { memo } from "react";
@@ -21,6 +25,8 @@ interface Props {
   originX: number;
   originY: number;
   frame: number;
+  /** "underlay" renders below furniture; "overlay" renders above (agent glows). */
+  layer: "underlay" | "overlay";
 }
 
 const GLOW_ACTIVITIES = new Set([
@@ -52,7 +58,53 @@ function OfficeSceneV2LightingImpl({
   tile = DEFAULT_TILE,
   originX,
   originY,
+  layer,
 }: Props) {
+  if (layer === "overlay") {
+    // Per-agent monitor glow — pulsing above furniture
+    const agentGlows: { left: number; top: number; color: string; key: string }[] = [];
+    for (const a of agents) {
+      const m = motions.get(a.id);
+      if (m?.isMoving) continue;
+      if (!GLOW_ACTIVITIES.has(a.activity ?? "desk-work")) continue;
+      const mx = a.gridX;
+      const my = a.gridY - 1;
+      const pos = gridCenterToScreen(mx, my, tile);
+      const accent =
+        a.activity === "command-center" || a.activity === "command-monitoring"
+          ? "#22d3ee"
+          : a.activity === "qa" || a.activity === "qa-test"
+          ? "#f97316"
+          : "#60a5fa";
+      agentGlows.push({ left: pos.x - originX, top: pos.y - originY, color: accent, key: a.id });
+    }
+    return (
+      <>
+        {agentGlows.map((g) => (
+          <div
+            key={g.key}
+            style={{
+              position: "absolute",
+              left: g.left,
+              top: g.top,
+              width: 28,
+              height: 28,
+              transform: "translate(-50%, -85%)",
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${g.color}cc 0%, ${g.color}33 45%, transparent 75%)`,
+              filter: "blur(1px)",
+              pointerEvents: "none",
+              zIndex: 999,
+              animation: "monitorPulse 2.4s ease-in-out infinite",
+            }}
+          />
+        ))}
+      </>
+    );
+  }
+
+  // === UNDERLAY: zone spotlights + command reflection (below furniture) ===
+
   // Layer 1: Ceiling spotlights — warm pools of light per zone
   const spotlights = V2_ZONES.map((z) => {
     const bounds = gridRectBounds(z.rect, tile);
@@ -84,24 +136,6 @@ function OfficeSceneV2LightingImpl({
       })()
     : null;
 
-  // Layer 3: Per-agent monitor glow
-  const agentGlows: { left: number; top: number; color: string; key: string }[] = [];
-  for (const a of agents) {
-    const m = motions.get(a.id);
-    if (m?.isMoving) continue;
-    if (!GLOW_ACTIVITIES.has(a.activity ?? "desk-work")) continue;
-    const mx = a.gridX;
-    const my = a.gridY - 1;
-    const pos = gridCenterToScreen(mx, my, tile);
-    const accent =
-      a.activity === "command-center" || a.activity === "command-monitoring"
-        ? "#22d3ee"
-        : a.activity === "qa" || a.activity === "qa-test"
-        ? "#f97316"
-        : "#60a5fa";
-    agentGlows.push({ left: pos.x - originX, top: pos.y - originY, color: accent, key: a.id });
-  }
-
   return (
     <>
       {/* Layer 1: Ceiling spotlights */}
@@ -117,7 +151,7 @@ function OfficeSceneV2LightingImpl({
             transform: "translate(-50%, -50%)",
             background: `radial-gradient(ellipse at center, rgba(${s.color},${s.intensity}) 0%, rgba(${s.color},${s.intensity * 0.3}) 40%, transparent 70%)`,
             pointerEvents: "none",
-            zIndex: 45,
+            zIndex: 5,
             mixBlendMode: "screen",
           }}
         />
@@ -125,49 +159,28 @@ function OfficeSceneV2LightingImpl({
 
       {/* Layer 2: Command center floor reflection */}
       {cmdReflection && (
-        <>
-          <div
-            style={{
-              position: "absolute",
-              left: cmdReflection.left,
-              top: cmdReflection.top,
-              width: cmdReflection.w,
-              height: cmdReflection.h,
-              transform: "translate(-50%, -50%)",
-              background:
-                "radial-gradient(ellipse at center top, rgba(34,211,238,0.18) 0%, rgba(34,211,238,0.06) 40%, transparent 70%)",
-              pointerEvents: "none",
-              zIndex: 46,
-              mixBlendMode: "screen",
-              filter: "blur(3px)",
-            }}
-          />
-        </>
-      )}
-
-      {/* Layer 3: Per-agent monitor glow */}
-      {agentGlows.map((g) => (
         <div
-          key={g.key}
           style={{
             position: "absolute",
-            left: g.left,
-            top: g.top,
-            width: 28,
-            height: 28,
-            transform: "translate(-50%, -85%)",
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${g.color}cc 0%, ${g.color}33 45%, transparent 75%)`,
-            filter: "blur(1px)",
+            left: cmdReflection.left,
+            top: cmdReflection.top,
+            width: cmdReflection.w,
+            height: cmdReflection.h,
+            transform: "translate(-50%, -50%)",
+            background:
+              "radial-gradient(ellipse at center top, rgba(34,211,238,0.18) 0%, rgba(34,211,238,0.06) 40%, transparent 70%)",
             pointerEvents: "none",
-            zIndex: 150,
-            animation: "monitorPulse 2.4s ease-in-out infinite",
+            zIndex: 6,
+            mixBlendMode: "screen",
+            filter: "blur(3px)",
           }}
         />
-      ))}
+      )}
     </>
   );
 }
 
-export const OfficeSceneV2Lighting = memo(OfficeSceneV2LightingImpl, (p, n) => p.frame === n.frame);
+export const OfficeSceneV2Lighting = memo(OfficeSceneV2LightingImpl, (p, n) =>
+  p.frame === n.frame && p.layer === n.layer
+);
 export default OfficeSceneV2Lighting;

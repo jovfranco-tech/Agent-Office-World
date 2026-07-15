@@ -41,35 +41,35 @@ function OfficeSceneV2FloorImpl({ tile, originX, originY }: Props) {
           boxShadow: "inset 0 0 70px rgba(70,55,30,0.18)",
         }}
       >
-        {/* Concrete grain noise */}
+        {/* Concrete grain — single subtle noise layer (cleaner, less clutter) */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' /%3E%3C/filter%3E%3Crect width='60' height='60' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E\")",
-            opacity: 0.1,
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' /%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E\")",
+            opacity: 0.08,
             mixBlendMode: "multiply",
           }}
         />
-        {/* Tile grid — warm subtle lines */}
+        {/* Tile grid — very subtle warm lines */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(140,130,110,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(140,130,110,0.06) 1px, transparent 1px)",
+              "linear-gradient(rgba(140,130,110,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(140,130,110,0.04) 1px, transparent 1px)",
             backgroundSize: `${tile.w}px ${tile.h}px`,
-            opacity: 0.9,
+            opacity: 0.7,
           }}
         />
-        {/* Specular highlight — polished reflection from ceiling lights */}
+        {/* Specular highlight — broad polished reflection */}
         <div
           style={{
             position: "absolute",
             inset: 0,
             background:
-              "radial-gradient(ellipse 45% 30% at 50% 25%, rgba(255,250,240,0.35) 0%, transparent 60%)",
+              "radial-gradient(ellipse 55% 38% at 50% 20%, rgba(255,250,240,0.42) 0%, rgba(255,250,240,0.08) 45%, transparent 72%)",
           }}
         />
       </div>

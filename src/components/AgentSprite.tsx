@@ -25,6 +25,8 @@ interface Props {
   originX: number;
   originY: number;
   size: number;
+  /** Explicit z-index from the scene's unified depth sort. */
+  zIndex: number;
   isSelected: boolean;
   isDimmed: boolean;
   showLabels: boolean;
@@ -39,6 +41,7 @@ function AgentSpriteImpl({
   originX,
   originY,
   size,
+  zIndex,
   isSelected,
   isDimmed,
   showLabels,
@@ -72,7 +75,7 @@ function AgentSpriteImpl({
         left,
         top,
         transform: "translate(-50%, -100%)",
-        zIndex: 1000 + depth,
+        zIndex,
         cursor: "pointer",
         opacity: isDimmed ? 0.32 : 1,
         transition: "opacity 180ms ease",
@@ -121,6 +124,7 @@ export const AgentSprite = memo(AgentSpriteImpl, (prev, next) => {
     prev.isDimmed === next.isDimmed &&
     prev.showLabels === next.showLabels &&
     prev.size === next.size &&
+    prev.zIndex === next.zIndex &&
     prev.motion === next.motion &&
     prev.agent === next.agent
   );

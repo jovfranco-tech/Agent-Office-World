@@ -143,43 +143,56 @@ function MF(
  * Zones have 3-5 items each. Wide corridors between everything.
  */
 export const V2_FURNITURE: V2Furniture[] = [
-  // === MEETING ROOM (1,1 7×6) — 5 pieces ===
-  // Hero meeting table + 4 chairs + whiteboard + 1 plant
+  // === MEETING ROOM (1,1 7×6) — table + chairs + whiteboard + screen + partitions ===
   MF("meeting-table", "strategy-room", 3, 3, 3, 2),
   MF("chair", "strategy-room", 3, 2),
   MF("chair", "strategy-room", 5, 2),
   MF("chair", "strategy-room", 3, 5),
   MF("chair", "strategy-room", 5, 5),
   MF("whiteboard", "strategy-room", 6, 2),
-  MF("plant", "strategy-room", 1, 5),
+  MF("presentation-screen", "strategy-room", 1, 3),
+  MF("plant", "strategy-room", 6, 5),
+  // Glass partitions enclosing the meeting room (premium office feel)
+  MF("glass-partition", "strategy-room", 7, 2, 1),
+  MF("glass-partition", "strategy-room", 7, 4, 1),
 
-  // === RECEPTION (10,1 6×5) — 4 pieces ===
+  // === RECEPTION (10,1 6×5) — desk + seating + sign + plant ===
   MF("reception-desk", "reception", 11, 2, 3, 1, "AGENT OFFICE"),
+  MF("wall-sign", "reception", 13, 1, 1, 1, "AGENT OFFICE"),
   MF("chair", "reception", 12, 3),
-  MF("sofa", "reception", 13, 3),
+  MF("sofa", "reception", 13, 4),
   MF("plant", "reception", 14, 4),
+  MF("floor-lamp", "reception", 10, 4),
 
-  // === ENGINEERING (19,1 12×7) — 8 pieces (3 pods × 2 desks + rack) ===
-  MF("desk", "engineering-pods", 20, 2),
+  // === ENGINEERING (19,1 12×7) — 3 pods × dual-monitor desks + rack + plant ===
+  MF("dual-monitor-desk", "engineering-pods", 20, 2),
   MF("chair", "engineering-pods", 20, 3),
-  MF("desk", "engineering-pods", 22, 2),
+  MF("dual-monitor-desk", "engineering-pods", 22, 2),
   MF("chair", "engineering-pods", 22, 3),
-  MF("desk", "engineering-pods", 25, 2),
+  MF("dual-monitor-desk", "engineering-pods", 25, 2),
   MF("chair", "engineering-pods", 25, 3),
-  MF("desk", "engineering-pods", 27, 2),
+  MF("dual-monitor-desk", "engineering-pods", 27, 2),
   MF("chair", "engineering-pods", 27, 3),
+  MF("dual-monitor-desk", "engineering-pods", 20, 5),
+  MF("chair", "engineering-pods", 20, 6),
+  MF("dual-monitor-desk", "engineering-pods", 27, 5),
+  MF("chair", "engineering-pods", 27, 6),
   MF("server-rack", "engineering-pods", 29, 5),
-  MF("plant", "engineering-pods", 20, 6),
+  MF("plant", "engineering-pods", 24, 6),
 
-  // === OPEN WORKSPACE (9,8 8×7) — 7 pieces (3 stations + whiteboard + plant) ===
+  // === OPEN WORKSPACE (9,8 8×7) — 5 stations + whiteboard + plants ===
   MF("desk", "open-workspace", 10, 9),
   MF("chair", "open-workspace", 10, 10),
   MF("desk", "open-workspace", 12, 9),
   MF("chair", "open-workspace", 12, 10),
   MF("desk", "open-workspace", 14, 9),
   MF("chair", "open-workspace", 14, 10),
+  MF("desk", "open-workspace", 10, 12),
+  MF("chair", "open-workspace", 10, 13),
+  MF("desk", "open-workspace", 14, 12),
+  MF("chair", "open-workspace", 14, 13),
   MF("whiteboard", "open-workspace", 15, 9),
-  MF("plant", "open-workspace", 10, 13),
+  MF("plant", "open-workspace", 12, 13),
 
   // === RESEARCH & QA (1,9 6×7) — 5 pieces ===
   MF("bookshelf", "research-library", 1, 10),
@@ -204,21 +217,30 @@ export const V2_FURNITURE: V2Furniture[] = [
   MF("plant", "break-area", 14, 18),
   MF("rug", "break-area", 11, 18, 4, 4),
 
-  // === COMMAND CENTER (19,10 12×14) — HERO ZONE, 7 pieces ===
+  // === COMMAND CENTER (19,10 12×14) — HERO ZONE ===
   // Wall of screens (hero anchor) + console table + chairs + racks
   MF("command-wall", "command-center", 21, 11, 8, 2),
   MF("meeting-table", "command-center", 23, 15, 4, 2),
   MF("chair", "command-center", 23, 17),
   MF("chair", "command-center", 25, 17),
+  MF("chair", "command-center", 27, 15),
   MF("server-rack", "command-center", 21, 20),
   MF("server-rack", "command-center", 22, 20),
   MF("plant", "command-center", 29, 11),
+  MF("plant", "command-center", 29, 22),
   MF("floor-lamp", "command-center", 28, 16),
   MF("rug", "command-center", 21, 14, 8, 6),
 
-  // === Sparse corridor details (2 total, at zone boundaries) ===
+  // === Corridor + boundary details — fill negative space naturally ===
   MF("plant", "open-workspace", 18, 11),
   MF("floor-lamp", "open-workspace", 8, 14),
+  // Divider between open workspace and engineering
+  MF("divider", "open-workspace", 18, 9, 1),
+  // Plants along the central corridor
+  MF("plant", "open-workspace", 8, 11),
+  MF("plant", "engineering-pods", 18, 6),
+  // Break area extra seating
+  MF("sofa", "break-area", 14, 21),
 ];
 
 export function v2Metrics() {

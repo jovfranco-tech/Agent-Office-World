@@ -148,9 +148,16 @@ export default function CodexPetSprite({
   );
 
   // Build the CSS filter: drop-shadow + optional variant tints.
+  // Warm shadow tone matches the furniture contact shadows → unified light world.
+  // A subtle warm desaturate is ALWAYS applied so the bright cartoon pets share
+  // the same muted, semi-realistic visual world as the Kenney furniture. This is
+  // the key cohesion fix: without it, pets look like they're from a different game.
   const filters: string[] = [];
   if (isSelected) filters.push(`drop-shadow(0 0 6px ${accent}cc)`);
-  else filters.push("drop-shadow(0 3px 3px rgba(0,0,0,0.45))");
+  else filters.push("drop-shadow(0 3px 3px rgba(50,38,20,0.4))");
+  // Unifying color-grade: warm tint + slight desaturate + contrast to match
+  // the furniture's sepia(0.04) saturate(0.96) brightness(1.05) world.
+  filters.push("saturate(0.9) brightness(1.03) contrast(1.04) sepia(0.06)");
   if (variant?.hue) filters.push(`hue-rotate(${variant.hue}deg)`);
   if (variant?.brightness) filters.push(`brightness(${variant.brightness})`);
   if (variant?.saturate) filters.push(`saturate(${variant.saturate})`);

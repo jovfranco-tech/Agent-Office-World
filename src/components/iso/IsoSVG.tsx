@@ -334,20 +334,42 @@ export function SvgFloorLamp({ size = 36 }: { size?: number }) {
 // === GLASS PARTITION ===
 export function SvgGlassPartition({ size = 64, spanW = 1 }: { size?: number; spanW?: number }) {
   const s = size * Math.max(1, spanW);
+  // Minimalist premium glass wall: thin frameless glass with a single vertical
+  // mullion and soft tint. Inspired by modern office partitions (not industrial).
+  const W = s * 1.2;
+  const H = s * 1.05;
+  const wallH = s * 0.72;       // height of the wall
+  const baseY = s * 0.82;       // bottom on floor
   return (
-    <svg width={s * 1.2} height={s * 0.8} viewBox={`0 0 ${s * 1.2} ${s * 0.8}`} style={{ overflow: "visible" }}>
-      <rect
-        x={s * 0.1}
-        y={s * 0.05}
-        width={s}
-        height={s * 0.65}
-        rx="2"
-        fill="rgba(170,215,255,0.15)"
-        stroke="rgba(200,230,255,0.4)"
-        strokeWidth="1"
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ overflow: "visible", filter: "drop-shadow(1px 3px 4px rgba(60,45,25,0.18))" }}>
+      <defs>
+        <linearGradient id={`glass-${spanW}-${size}`} x1="0" y1="0" x2="0.7" y2="1">
+          <stop offset="0%" stopColor="rgba(190,220,240,0.34)" />
+          <stop offset="50%" stopColor="rgba(170,205,230,0.22)" />
+          <stop offset="100%" stopColor="rgba(185,215,240,0.30)" />
+        </linearGradient>
+      </defs>
+      {/* Glass pane — the single visible face */}
+      <polygon
+        points={`${s * 0.12},${baseY - wallH} ${s * 0.6},${baseY - wallH + s * 0.17} ${s * 0.6},${baseY + s * 0.17} ${s * 0.12},${baseY}`}
+        fill={`url(#glass-${spanW}-${size})`}
+        stroke="rgba(140,175,205,0.5)"
+        strokeWidth="0.6"
       />
-      {/* Mullion line */}
-      <line x1={s * 0.1} y1={s * 0.37} x2={s * 1.1} y2={s * 0.37} stroke="rgba(200,230,255,0.25)" strokeWidth="0.5" />
+      {/* Thin top edge (frameless premium look) */}
+      <polygon
+        points={`${s * 0.12},${baseY - wallH} ${s * 0.6},${baseY - wallH + s * 0.17} ${s * 1.02},${baseY - wallH} ${s * 0.54},${baseY - wallH - s * 0.17}`}
+        fill="rgba(210,230,245,0.28)"
+        stroke="rgba(150,180,210,0.4)"
+        strokeWidth="0.5"
+      />
+      {/* Single central mullion (minimal — 1, not 4) */}
+      <line x1={s * 0.36} y1={baseY - wallH + s * 0.085} x2={s * 0.36} y2={baseY + s * 0.085} stroke="rgba(110,125,145,0.55)" strokeWidth="0.9" />
+      {/* Floor track — very thin */}
+      <line x1={s * 0.12} y1={baseY} x2={s * 0.6} y2={baseY + s * 0.17} stroke="rgba(100,115,135,0.6)" strokeWidth="1.2" />
+      {/* Soft specular streak — premium glass reflection */}
+      <line x1={s * 0.2} y1={baseY - wallH + s * 0.08} x2={s * 0.32} y2={baseY - wallH * 0.4} stroke="rgba(255,255,255,0.5)" strokeWidth="1.4" />
+      <line x1={s * 0.44} y1={baseY - wallH * 0.5 + s * 0.08} x2={s * 0.52} y2={baseY - wallH * 0.25 + s * 0.08} stroke="rgba(255,255,255,0.3)" strokeWidth="1" />
     </svg>
   );
 }
