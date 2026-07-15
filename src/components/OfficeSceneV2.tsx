@@ -114,10 +114,12 @@ export default function OfficeSceneV2({
   return (
     <div ref={stageRef} className="iso-stage" onClick={handleStageClick}>
       <div
-        className="iso-scene"
+        className="iso-scene iso-scene-hero"
         style={{
           width,
           height,
+          // @ts-expect-error CSS custom property
+          "--target-scale": scale,
           transform: `translate(-50%, -50%) scale(${scale})`,
         }}
       >

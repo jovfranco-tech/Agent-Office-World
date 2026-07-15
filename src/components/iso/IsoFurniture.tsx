@@ -91,29 +91,83 @@ export const IsoReceptionDesk = memo(function IsoReceptionDesk({ f, tile, s = 1 
   );
 });
 
-/** IsoCommandWall — the WOW zone: a wall of 6 large glowing screens. */
+/** IsoCommandWall — the WOW zone: a wall of 6 large glowing screens with animated content. */
 export const IsoCommandWall = memo(function IsoCommandWall({ f, tile, s = 1 }: PieceProps) {
   const spanW = f.w ?? 1;
-  const w = tile.w * (0.7 + (spanW - 1) * 0.5) * s;
+  const w = tile.w * (0.85 + (spanW - 1) * 0.5) * s;
+  const h = tile.h * 2.4 * s;
   const screens = 6;
+  // Each screen gets a slightly different "content" color for visual variety
+  const screenColors = [
+    { bg: "#0a1f3a", glow: "#22d3ee", accent: "rgba(34,211,238,0.3)" },
+    { bg: "#0d1a2e", glow: "#3b82f6", accent: "rgba(59,130,246,0.3)" },
+    { bg: "#0a1f3a", glow: "#22d3ee", accent: "rgba(34,211,238,0.3)" },
+    { bg: "#0e1b2e", glow: "#818cf8", accent: "rgba(129,140,248,0.3)" },
+    { bg: "#0a1f3a", glow: "#22d3ee", accent: "rgba(34,211,238,0.3)" },
+    { bg: "#0d1a2e", glow: "#3b82f6", accent: "rgba(59,130,246,0.3)" },
+  ];
   return (
-    <div style={{ position: "relative", width: w, height: tile.h * 1.8 * s, transform: "translate(-50%,-82%)" }}>
-      {/* glow backdrop — intensified for WOW factor */}
-      <div style={{ position: "absolute", inset: -16, background: "radial-gradient(ellipse at center, rgba(34,211,238,0.3) 0%, rgba(34,211,238,0.08) 40%, transparent 75%)", borderRadius: 16, filter: "blur(4px)" }} />
-      {Array.from({ length: screens }).map((_, i) => (
+    <div style={{ position: "relative", width: w, height: h, transform: "translate(-50%,-82%)" }}>
+      {/* Massive glow backdrop — the wow moment */}
+      <div style={{
+        position: "absolute",
+        inset: -24,
+        background: "radial-gradient(ellipse at center, rgba(34,211,238,0.35) 0%, rgba(34,211,238,0.12) 35%, transparent 70%)",
+        borderRadius: 20,
+        filter: "blur(6px)",
+      }} />
+      {/* Screen frames */}
+      {screenColors.map((sc, i) => (
         <div key={i} style={{
           position: "absolute",
           left: `${(i / screens) * 100}%`,
           top: 0,
-          width: `${100 / screens - 2}%`,
+          width: `${100 / screens - 1.5}%`,
           height: "100%",
-          background: "linear-gradient(180deg,#0a1f3a,#061427)",
-          border: "2px solid #22d3ee",
-          borderRadius: 3,
-          boxShadow: "0 0 10px rgba(34,211,238,0.5)",
+          background: `linear-gradient(180deg, ${sc.bg}, #061427)`,
+          border: `2px solid ${sc.glow}`,
+          borderRadius: 4,
+          boxShadow: `0 0 14px ${sc.glow}99, inset 0 0 8px ${sc.accent}`,
           overflow: "hidden",
         }}>
-          <div style={{ position: "absolute", inset: 2, background: "repeating-linear-gradient(180deg, rgba(34,211,238,0.25) 0 2px, transparent 2px 5px)" }} />
+          {/* Animated scanlines */}
+          <div style={{
+            position: "absolute",
+            inset: 2,
+            background: `repeating-linear-gradient(180deg, ${sc.accent} 0 2px, transparent 2px 5px)`,
+            animation: `scanline ${1.5 + i * 0.2}s linear infinite`,
+          }} />
+          {/* Fake data bars (visual interest) */}
+          <div style={{
+            position: "absolute",
+            bottom: "15%",
+            left: "15%",
+            right: "15%",
+            height: "20%",
+            background: `${sc.glow}33`,
+            borderRadius: 1,
+          }} />
+          <div style={{
+            position: "absolute",
+            bottom: "40%",
+            left: "15%",
+            width: "40%",
+            height: "12%",
+            background: `${sc.glow}22`,
+            borderRadius: 1,
+          }} />
+          {/* Blinking status dot */}
+          <div style={{
+            position: "absolute",
+            top: "10%",
+            right: "12%",
+            width: 4,
+            height: 4,
+            borderRadius: "50%",
+            background: "#22c55e",
+            boxShadow: "0 0 4px #22c55e",
+            animation: "ledBlink 2s ease-in-out infinite",
+          }} />
         </div>
       ))}
     </div>

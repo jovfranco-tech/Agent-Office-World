@@ -77,7 +77,12 @@ function FurnitureItem({
   if (hasSprite(f.type)) {
     const url = spriteUrl(f.type, "right");
     const extras = deskExtras(f.type);
-    const SPRITE_SCALE = 1.8;
+    const SPRITE_SCALE = 1.9;
+    // Brightness/contrast boost for premium depth + warm top-light feel
+    const isScreen = f.type === "command-wall" || f.type === "presentation-screen";
+    const depthFilter = isScreen
+      ? "drop-shadow(0 6px 10px rgba(0,0,0,0.5)) brightness(1.15) saturate(1.3)"
+      : "drop-shadow(0 5px 8px rgba(0,0,0,0.45)) brightness(1.05) contrast(1.08)";
     return (
       <div
         style={{
@@ -87,21 +92,36 @@ function FurnitureItem({
           transform: `translate(-50%, -100%) scale(${SPRITE_SCALE})`,
           zIndex: depth,
           pointerEvents: "none",
-          filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.35))",
+          filter: depthFilter,
         }}
       >
-        {/* Contact shadow ellipse on the floor */}
+        {/* Contact shadow ellipse — darker, more defined for grounding */}
         <div
           style={{
             position: "absolute",
-            bottom: -4,
+            bottom: -3,
             left: "50%",
-            width: "70%",
-            height: 12,
+            width: "75%",
+            height: 10,
             transform: "translateX(-50%)",
-            background: "radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%)",
+            background: "radial-gradient(ellipse, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 50%, transparent 75%)",
             borderRadius: "50%",
             pointerEvents: "none",
+            filter: "blur(1px)",
+          }}
+        />
+        {/* Subtle top highlight (rim light from above-left) */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "30%",
+            background: "linear-gradient(180deg, rgba(255,250,240,0.08) 0%, transparent 100%)",
+            borderRadius: "4px 4px 0 0",
+            pointerEvents: "none",
+            mixBlendMode: "screen",
           }}
         />
         {url && (
@@ -124,6 +144,7 @@ function FurnitureItem({
               top: "-15%",
               width: "35%",
               imageRendering: "auto",
+              filter: "brightness(1.3) saturate(1.4) drop-shadow(0 0 4px rgba(59,130,246,0.4))",
             }}
             draggable={false}
           />
