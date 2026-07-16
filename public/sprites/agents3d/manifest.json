@@ -1,0 +1,737 @@
+{
+  "ceo": {
+    "colors": {
+      "id": "ceo",
+      "shirt": "#5b4a8a",
+      "pants": "#2a2536",
+      "skin": "#e8c4a0",
+      "hair": "#3a2a1a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "ceo_idle_01.png",
+        "ceo_idle_02.png",
+        "ceo_idle_03.png",
+        "ceo_idle_04.png",
+        "ceo_idle_05.png",
+        "ceo_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "ceo_walk_01.png",
+        "ceo_walk_02.png",
+        "ceo_walk_03.png",
+        "ceo_walk_04.png",
+        "ceo_walk_05.png",
+        "ceo_walk_06.png",
+        "ceo_walk_07.png",
+        "ceo_walk_08.png"
+      ]
+    }
+  },
+  "strategy": {
+    "colors": {
+      "id": "strategy",
+      "shirt": "#b85c3a",
+      "pants": "#3a2a28",
+      "skin": "#d8a880",
+      "hair": "#1a1410"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "strategy_idle_01.png",
+        "strategy_idle_02.png",
+        "strategy_idle_03.png",
+        "strategy_idle_04.png",
+        "strategy_idle_05.png",
+        "strategy_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "strategy_walk_01.png",
+        "strategy_walk_02.png",
+        "strategy_walk_03.png",
+        "strategy_walk_04.png",
+        "strategy_walk_05.png",
+        "strategy_walk_06.png",
+        "strategy_walk_07.png",
+        "strategy_walk_08.png"
+      ]
+    }
+  },
+  "pmo": {
+    "colors": {
+      "id": "pmo",
+      "shirt": "#8a5a8a",
+      "pants": "#2e2638",
+      "skin": "#f0d0b0",
+      "hair": "#5a3a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "pmo_idle_01.png",
+        "pmo_idle_02.png",
+        "pmo_idle_03.png",
+        "pmo_idle_04.png",
+        "pmo_idle_05.png",
+        "pmo_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "pmo_walk_01.png",
+        "pmo_walk_02.png",
+        "pmo_walk_03.png",
+        "pmo_walk_04.png",
+        "pmo_walk_05.png",
+        "pmo_walk_06.png",
+        "pmo_walk_07.png",
+        "pmo_walk_08.png"
+      ]
+    }
+  },
+  "coding-1": {
+    "colors": {
+      "id": "coding-1",
+      "shirt": "#3a6a9a",
+      "pants": "#28303a",
+      "skin": "#e0b890",
+      "hair": "#2a1a10"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "coding-1_idle_01.png",
+        "coding-1_idle_02.png",
+        "coding-1_idle_03.png",
+        "coding-1_idle_04.png",
+        "coding-1_idle_05.png",
+        "coding-1_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "coding-1_walk_01.png",
+        "coding-1_walk_02.png",
+        "coding-1_walk_03.png",
+        "coding-1_walk_04.png",
+        "coding-1_walk_05.png",
+        "coding-1_walk_06.png",
+        "coding-1_walk_07.png",
+        "coding-1_walk_08.png"
+      ]
+    }
+  },
+  "coding-2": {
+    "colors": {
+      "id": "coding-2",
+      "shirt": "#2a7a6a",
+      "pants": "#1a3030",
+      "skin": "#d8a878",
+      "hair": "#4a3020"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "coding-2_idle_01.png",
+        "coding-2_idle_02.png",
+        "coding-2_idle_03.png",
+        "coding-2_idle_04.png",
+        "coding-2_idle_05.png",
+        "coding-2_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "coding-2_walk_01.png",
+        "coding-2_walk_02.png",
+        "coding-2_walk_03.png",
+        "coding-2_walk_04.png",
+        "coding-2_walk_05.png",
+        "coding-2_walk_06.png",
+        "coding-2_walk_07.png",
+        "coding-2_walk_08.png"
+      ]
+    }
+  },
+  "infra": {
+    "colors": {
+      "id": "infra",
+      "shirt": "#3a4a5a",
+      "pants": "#222a32",
+      "skin": "#e8c4a0",
+      "hair": "#1a1a1a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "infra_idle_01.png",
+        "infra_idle_02.png",
+        "infra_idle_03.png",
+        "infra_idle_04.png",
+        "infra_idle_05.png",
+        "infra_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "infra_walk_01.png",
+        "infra_walk_02.png",
+        "infra_walk_03.png",
+        "infra_walk_04.png",
+        "infra_walk_05.png",
+        "infra_walk_06.png",
+        "infra_walk_07.png",
+        "infra_walk_08.png"
+      ]
+    }
+  },
+  "automation": {
+    "colors": {
+      "id": "automation",
+      "shirt": "#5a7a3a",
+      "pants": "#2a3420",
+      "skin": "#f0d0b0",
+      "hair": "#6a4a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "automation_idle_01.png",
+        "automation_idle_02.png",
+        "automation_idle_03.png",
+        "automation_idle_04.png",
+        "automation_idle_05.png",
+        "automation_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "automation_walk_01.png",
+        "automation_walk_02.png",
+        "automation_walk_03.png",
+        "automation_walk_04.png",
+        "automation_walk_05.png",
+        "automation_walk_06.png",
+        "automation_walk_07.png",
+        "automation_walk_08.png"
+      ]
+    }
+  },
+  "ops": {
+    "colors": {
+      "id": "ops",
+      "shirt": "#7a6a4a",
+      "pants": "#38302a",
+      "skin": "#d8a878",
+      "hair": "#3a2a1a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "ops_idle_01.png",
+        "ops_idle_02.png",
+        "ops_idle_03.png",
+        "ops_idle_04.png",
+        "ops_idle_05.png",
+        "ops_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "ops_walk_01.png",
+        "ops_walk_02.png",
+        "ops_walk_03.png",
+        "ops_walk_04.png",
+        "ops_walk_05.png",
+        "ops_walk_06.png",
+        "ops_walk_07.png",
+        "ops_walk_08.png"
+      ]
+    }
+  },
+  "support": {
+    "colors": {
+      "id": "support",
+      "shirt": "#9a5a6a",
+      "pants": "#382a30",
+      "skin": "#e8c4a0",
+      "hair": "#4a2a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "support_idle_01.png",
+        "support_idle_02.png",
+        "support_idle_03.png",
+        "support_idle_04.png",
+        "support_idle_05.png",
+        "support_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "support_walk_01.png",
+        "support_walk_02.png",
+        "support_walk_03.png",
+        "support_walk_04.png",
+        "support_walk_05.png",
+        "support_walk_06.png",
+        "support_walk_07.png",
+        "support_walk_08.png"
+      ]
+    }
+  },
+  "design": {
+    "colors": {
+      "id": "design",
+      "shirt": "#6a4a8a",
+      "pants": "#2a2536",
+      "skin": "#f0d0b0",
+      "hair": "#2a2a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "design_idle_01.png",
+        "design_idle_02.png",
+        "design_idle_03.png",
+        "design_idle_04.png",
+        "design_idle_05.png",
+        "design_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "design_walk_01.png",
+        "design_walk_02.png",
+        "design_walk_03.png",
+        "design_walk_04.png",
+        "design_walk_05.png",
+        "design_walk_06.png",
+        "design_walk_07.png",
+        "design_walk_08.png"
+      ]
+    }
+  },
+  "product": {
+    "colors": {
+      "id": "product",
+      "shirt": "#3a7a8a",
+      "pants": "#1a3036",
+      "skin": "#d8a880",
+      "hair": "#5a3a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "product_idle_01.png",
+        "product_idle_02.png",
+        "product_idle_03.png",
+        "product_idle_04.png",
+        "product_idle_05.png",
+        "product_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "product_walk_01.png",
+        "product_walk_02.png",
+        "product_walk_03.png",
+        "product_walk_04.png",
+        "product_walk_05.png",
+        "product_walk_06.png",
+        "product_walk_07.png",
+        "product_walk_08.png"
+      ]
+    }
+  },
+  "research": {
+    "colors": {
+      "id": "research",
+      "shirt": "#4a6a8a",
+      "pants": "#28303a",
+      "skin": "#e0b890",
+      "hair": "#8a6a3a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "research_idle_01.png",
+        "research_idle_02.png",
+        "research_idle_03.png",
+        "research_idle_04.png",
+        "research_idle_05.png",
+        "research_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "research_walk_01.png",
+        "research_walk_02.png",
+        "research_walk_03.png",
+        "research_walk_04.png",
+        "research_walk_05.png",
+        "research_walk_06.png",
+        "research_walk_07.png",
+        "research_walk_08.png"
+      ]
+    }
+  },
+  "data": {
+    "colors": {
+      "id": "data",
+      "shirt": "#3a5a7a",
+      "pants": "#222e3a",
+      "skin": "#e8c4a0",
+      "hair": "#1a1410"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "data_idle_01.png",
+        "data_idle_02.png",
+        "data_idle_03.png",
+        "data_idle_04.png",
+        "data_idle_05.png",
+        "data_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "data_walk_01.png",
+        "data_walk_02.png",
+        "data_walk_03.png",
+        "data_walk_04.png",
+        "data_walk_05.png",
+        "data_walk_06.png",
+        "data_walk_07.png",
+        "data_walk_08.png"
+      ]
+    }
+  },
+  "qa": {
+    "colors": {
+      "id": "qa",
+      "shirt": "#8a7a3a",
+      "pants": "#38322a",
+      "skin": "#d8a878",
+      "hair": "#3a2a20"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "qa_idle_01.png",
+        "qa_idle_02.png",
+        "qa_idle_03.png",
+        "qa_idle_04.png",
+        "qa_idle_05.png",
+        "qa_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "qa_walk_01.png",
+        "qa_walk_02.png",
+        "qa_walk_03.png",
+        "qa_walk_04.png",
+        "qa_walk_05.png",
+        "qa_walk_06.png",
+        "qa_walk_07.png",
+        "qa_walk_08.png"
+      ]
+    }
+  },
+  "finance": {
+    "colors": {
+      "id": "finance",
+      "shirt": "#4a5a3a",
+      "pants": "#2a2e22",
+      "skin": "#f0d0b0",
+      "hair": "#5a3a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "finance_idle_01.png",
+        "finance_idle_02.png",
+        "finance_idle_03.png",
+        "finance_idle_04.png",
+        "finance_idle_05.png",
+        "finance_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "finance_walk_01.png",
+        "finance_walk_02.png",
+        "finance_walk_03.png",
+        "finance_walk_04.png",
+        "finance_walk_05.png",
+        "finance_walk_06.png",
+        "finance_walk_07.png",
+        "finance_walk_08.png"
+      ]
+    }
+  },
+  "legal": {
+    "colors": {
+      "id": "legal",
+      "shirt": "#3a3a5a",
+      "pants": "#222236",
+      "skin": "#e0b890",
+      "hair": "#2a1a10"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "legal_idle_01.png",
+        "legal_idle_02.png",
+        "legal_idle_03.png",
+        "legal_idle_04.png",
+        "legal_idle_05.png",
+        "legal_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "legal_walk_01.png",
+        "legal_walk_02.png",
+        "legal_walk_03.png",
+        "legal_walk_04.png",
+        "legal_walk_05.png",
+        "legal_walk_06.png",
+        "legal_walk_07.png",
+        "legal_walk_08.png"
+      ]
+    }
+  },
+  "security": {
+    "colors": {
+      "id": "security",
+      "shirt": "#2a2a3a",
+      "pants": "#1a1a26",
+      "skin": "#d8a880",
+      "hair": "#1a1a1a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "security_idle_01.png",
+        "security_idle_02.png",
+        "security_idle_03.png",
+        "security_idle_04.png",
+        "security_idle_05.png",
+        "security_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "security_walk_01.png",
+        "security_walk_02.png",
+        "security_walk_03.png",
+        "security_walk_04.png",
+        "security_walk_05.png",
+        "security_walk_06.png",
+        "security_walk_07.png",
+        "security_walk_08.png"
+      ]
+    }
+  },
+  "risk": {
+    "colors": {
+      "id": "risk",
+      "shirt": "#5a3a3a",
+      "pants": "#302222",
+      "skin": "#e8c4a0",
+      "hair": "#4a3020"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "risk_idle_01.png",
+        "risk_idle_02.png",
+        "risk_idle_03.png",
+        "risk_idle_04.png",
+        "risk_idle_05.png",
+        "risk_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "risk_walk_01.png",
+        "risk_walk_02.png",
+        "risk_walk_03.png",
+        "risk_walk_04.png",
+        "risk_walk_05.png",
+        "risk_walk_06.png",
+        "risk_walk_07.png",
+        "risk_walk_08.png"
+      ]
+    }
+  },
+  "docs": {
+    "colors": {
+      "id": "docs",
+      "shirt": "#7a8a5a",
+      "pants": "#36382a",
+      "skin": "#f0d0b0",
+      "hair": "#6a4a3a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "docs_idle_01.png",
+        "docs_idle_02.png",
+        "docs_idle_03.png",
+        "docs_idle_04.png",
+        "docs_idle_05.png",
+        "docs_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "docs_walk_01.png",
+        "docs_walk_02.png",
+        "docs_walk_03.png",
+        "docs_walk_04.png",
+        "docs_walk_05.png",
+        "docs_walk_06.png",
+        "docs_walk_07.png",
+        "docs_walk_08.png"
+      ]
+    }
+  },
+  "cs": {
+    "colors": {
+      "id": "cs",
+      "shirt": "#9a7a4a",
+      "pants": "#383026",
+      "skin": "#d8a878",
+      "hair": "#3a2a1a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "cs_idle_01.png",
+        "cs_idle_02.png",
+        "cs_idle_03.png",
+        "cs_idle_04.png",
+        "cs_idle_05.png",
+        "cs_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "cs_walk_01.png",
+        "cs_walk_02.png",
+        "cs_walk_03.png",
+        "cs_walk_04.png",
+        "cs_walk_05.png",
+        "cs_walk_06.png",
+        "cs_walk_07.png",
+        "cs_walk_08.png"
+      ]
+    }
+  },
+  "sales": {
+    "colors": {
+      "id": "sales",
+      "shirt": "#8a5a3a",
+      "pants": "#362a22",
+      "skin": "#e8c4a0",
+      "hair": "#5a3a2a"
+    },
+    "idle": {
+      "frames": 6,
+      "fps": 12,
+      "files": [
+        "sales_idle_01.png",
+        "sales_idle_02.png",
+        "sales_idle_03.png",
+        "sales_idle_04.png",
+        "sales_idle_05.png",
+        "sales_idle_06.png"
+      ]
+    },
+    "walk": {
+      "frames": 8,
+      "fps": 12,
+      "files": [
+        "sales_walk_01.png",
+        "sales_walk_02.png",
+        "sales_walk_03.png",
+        "sales_walk_04.png",
+        "sales_walk_05.png",
+        "sales_walk_06.png",
+        "sales_walk_07.png",
+        "sales_walk_08.png"
+      ]
+    }
+  }
+}

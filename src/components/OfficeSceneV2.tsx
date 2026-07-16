@@ -17,7 +17,7 @@ import type { Agent, OfficeZone, AgentRole, AgentState } from "../types";
 import OfficeSceneV2Floor, { computeV2SceneBounds } from "./OfficeSceneV2Floor";
 import { FurnitureItem } from "./OfficeSceneV2Furniture";
 import OfficeSceneV2Lighting from "./OfficeSceneV2Lighting";
-import AgentSprite from "./AgentSprite";
+import HumanAgentSprite from "./HumanAgentSprite";
 import { DEFAULT_TILE, type TileSize } from "../lib/isometric";
 import { AgentMotionStore } from "../lib/agentMovement";
 import { V2_FURNITURE, type V2Furniture } from "../data/officeSceneV2Layout";
@@ -188,7 +188,7 @@ export default function OfficeSceneV2({
             (roleFilter !== null || stateFilter !== null) && !matchesFilter;
           const motion = store.get(agent.id);
           return (
-            <AgentSprite
+            <HumanAgentSprite
               key={`a-${agent.id}`}
               agent={agent}
               motion={motion}

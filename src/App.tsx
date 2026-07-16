@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Agent, AgentRole, AgentState, OfficeZone } from "./types";
 import OfficeSceneV2 from "./components/OfficeSceneV2";
+import ComposeTest from "./components/ComposeTest";
 import ControlBar from "./components/ControlBar";
 import OfficeLegend from "./components/OfficeLegend";
 import EventTimeline from "./components/EventTimeline";
@@ -194,6 +195,11 @@ export default function App() {
     setSelectedZoneId(z?.id ?? null);
     if (z) setSelectedAgentId(null);
   }, []);
+
+  // Temporary: ?compose=1 shows the character/furniture style-match test page
+  if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("compose") === "1") {
+    return <ComposeTest />;
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", width: "100vw", overflow: "hidden" }}>
