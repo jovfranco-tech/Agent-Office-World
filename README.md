@@ -1,182 +1,150 @@
 # Agent Office World
 
-A visual, **isometric office simulation** where AI agents work, walk, meet,
-review boards and collaborate. Each agent is rendered as an animated
-**[Codex Pets / Petdex](https://petdex.dev)** sprite, grounded in a continuous
-office floor with desks, monitors, meeting tables, plants, a server rack and a
-command-center wall of screens.
+**A visual operating environment for exploring how specialized AI agents could coordinate work inside one shared organization.**
 
-This is intentionally **not** a dashboard, node graph, mind map, org chart, or
-set of isolated houses. It is a single, living open office.
+[Live portfolio demo](https://agent-office-world.vercel.app) · [Jovan Franco](https://www.jovanfranco.com)
 
----
+> **Portfolio classification:** interactive concept demonstrator. The current simulation is deterministic and runs locally in the browser; it does not call an LLM, execute autonomous work, or connect to production systems.
+
+## Executive overview
+
+Agent Office World turns an abstract multi-agent operating model into a visible, inspectable office. Instead of presenting agents as a chat list, node graph, or static org chart, it places specialized roles inside one continuous isometric workspace where they move, meet, review, escalate, and ship simulated work.
+
+The project demonstrates how an AI-native organization can be communicated to executives and product teams through:
+
+- clear role specialization and operating zones;
+- visible states, tasks, energy, movement, and event history;
+- shared rooms for strategy, risk, QA, security, finance, and delivery;
+- a deterministic simulation that is easy to inspect and explain;
+- a visual foundation that could later be connected to real agent telemetry.
+
+## What this project demonstrates
+
+| Capability | Evidence in the demo |
+| --- | --- |
+| AI operating-model design | 21 specialized agents across executive, engineering, risk, finance, legal, support, and delivery roles |
+| Systems visualization | One continuous 26×22 isometric office with 12 operational zones |
+| State-driven UX | Agent state controls animation, location, task context, energy, and status treatment |
+| Simulation architecture | Deterministic browser-side clock with live, burst, and reset operations |
+| Responsible representation | Explicit separation between visual simulation and real autonomous execution |
+| Product delivery | Responsive Vite/React application deployed to Vercel |
+
+## Experience
+
+The office includes:
+
+- Reception
+- Open Workspace
+- Engineering Pods
+- Strategy Room
+- War Room
+- QA Lab
+- Research Library
+- Finance Desk
+- Client Success
+- Break Area
+- Security Desk
+- Command Center Wall
+
+Each agent has a role, current state, task, zone, energy level, visual identity, and a unique Codex Pets / Petdex sprite. Agents sit at desks, gather in collaboration rooms, move between sensible locations, and emit simulated operating events.
+
+### Simulation controls
+
+- **Live Mode** advances the office every few seconds.
+- **Simulate 1 Hour** executes a bounded burst of state transitions.
+- **Reset Day** restores the initial roster and operating state.
+- Inspectors expose agent and zone details without hiding the deterministic model.
+
+## Architecture
+
+```text
+src/
+├── components/   Office world, floor, inspectors, timeline, controls
+├── data/         Agents, zones, furniture, events, pet manifest
+├── lib/          Simulation, isometric projection, sprite animation
+├── types/        Agent and sprite contracts
+├── App.tsx
+└── main.tsx
+
+public/sprites/codex-pets/<slug>/
+├── pet.json
+└── spritesheet.webp
+```
+
+### Key design decisions
+
+1. **Deterministic before autonomous.** The visual operating model can be evaluated without API keys, hidden prompts, or unpredictable outputs.
+2. **One shared environment.** The product represents collaboration as movement and shared context rather than isolated agent cards.
+3. **State drives animation.** Agent states map to visible animation rows such as working, reviewing, waving, jumping, or failure.
+4. **Depth-sorted isometric rendering.** Furniture and agents use a 2:1 projection and painter-style ordering.
+5. **Explicit asset boundaries.** Application source and third-party sprites are licensed separately.
+
+### Isometric projection
+
+```text
+screen.x = (gridX - gridY) × tileWidth / 2
+screen.y = (gridX + gridY) × tileHeight / 2
+```
+
+The scene scales responsively and uses `gridX + gridY` depth ordering so agents and furniture remain visually coherent.
+
+## Simulation truth and limitations
+
+The current implementation is intentionally a **local mock simulation**:
+
+- no backend;
+- no external API;
+- no LLM calls;
+- no autonomous execution;
+- no production telemetry;
+- no customer or employee data.
+
+The simulation exposes three core operations in `src/lib/simulation.ts`:
+
+- `tick(previousState, intensity)` — advances a small number of agents and events;
+- `simulateHour(previousState)` — performs a bounded sequence of steps;
+- `resetDay()` — restores the initial operating state.
+
+A future production version would require authenticated telemetry, durable event storage, authorization controls, observability, cost governance, privacy review, and fail-closed action boundaries.
 
 ## Quick start
 
 ```bash
 npm install
-npm run dev          # http://localhost:5173
+npm run dev
 ```
 
-The repo already ships with real Codex Pets sprites in
-`public/sprites/codex-pets/`, so the office renders with real characters on
-first load — no extra steps required.
+Open `http://localhost:5173`.
 
-### Other commands
+### Validation commands
 
 ```bash
-npm run build        # type-check + production build (outputs to dist/)
-npm run typecheck    # tsc --noEmit
-npm run fetch-pets   # re-fetch / add pets (see "Sprites" below)
+npm run typecheck
+npm run build
 ```
 
----
+### Sprite maintenance
 
-## What you see
-
-- A continuous isometric office floor (26×22 grid) with **12 zones**:
-  Reception, Open Workspace, Engineering Pods, Strategy Room, War Room, QA Lab,
-  Research Library, Finance Desk, Client Success, Break Area, Security Desk,
-  and the Command Center Wall.
-- **21 mock agents**, each with a name, role, state, zone, task, energy level,
-  and — since v0.2 — a **unique** Codex Pet sprite (no two agents share a pet).
-- Real office structure: **outer perimeter walls** and **glass partitions**
-  between zones, so the floor reads as enclosed rooms, not tinted patches.
-- Recognizable furniture: desks with monitors, whiteboards, plants, sofas,
-  coffee tables, meeting tables, bookshelves, lamps with glows, server racks
-  with blinking LEDs, and a wall of command screens.
-- Agents sit **at their desks** (facing monitors), gather in meeting rooms, and
-  move between sensible spots as the simulation runs.
-
-### Agents & their unique pets (v0.2)
-
-Every one of the 21 agents is mapped to a **distinct** Codex Pet in
-`src/data/codexPetsManifest.ts` (verified: 0 duplicates via
-`detectDuplicatePets()`). Each agent is further differentiated by an **accent
-color + accessory glyph + status ring + scale**, so even species-adjacent pets
-read as separate characters. The mapping:
-zone**, so no two agents look truly identical in context.
-
-| Agent | Role | Pet (unique) | Accent |
-|---|---|---|---|
-| Sol | CEO | `ostrom` | 👑 amber |
-| Dario | Strategy | `wukong-5` | ♟️ amber |
-| Hana | PMO | `maisenpai` | 📋 purple |
-| Nova | Coding | `boba` | 💻 blue |
-| Kai | Coding | `xiao-moli` | ⌨️ blue |
-| Kano | Infra | `astro-ops` | 🏗️ slate |
-| Jin | Automation | `meridian` | 🤖 sky |
-| Mira | QA | `glitchcat` | 🐞 orange |
-| Sage | Security | `belayer-cat` | 🛡️ red |
-| Rhea | Risk | `artoria-saber` | ⚠️ red |
-| Elara | Research | `heimerdinger` | 🔬 cyan |
-| Theo | Data | `bytechomp-v2` | 📊 teal |
-| Orion | Product | `marcille-dungeon-meshi` | 📦 violet |
-| Vega | Design | `chefito` | 🎨 yellow |
-| Pax | Sales | `dylan-harper` | 📈 pink |
-| Iris | Support | `tabby` | 🎧 teal |
-| Lior | Customer Success | `lulu-capybara-2` | 🤝 green |
-| Atlas | Ops | `pelican-pedal` | ⚙️ sky |
-| Nadia | Finance | `guan-miao` | 💰 lime |
-| Cyrus | Legal/Compliance | `humboldt` | ⚖️ slate |
-| Wren | Documentation | `paperclip` | 📝 light |
-
----
-
-## How the simulation works
-
-The simulation is a **pure local mock** (`src/lib/simulation.ts`) — no backend,
-no LLM, no external API. It exposes three operations:
-
-- **`tick(prev, intensity)`** — one small step: a few agents change state,
-  change task, move within their zone, drift energy, and occasionally emit an
-  event. Called every ~2.2s by **Live Mode**.
-- **`simulateHour(prev)`** — a burst of 6 steps at once (the **Simulate 1
-  Hour** button). Also advances the on-screen "day hour".
-- **`resetDay()`** — restores the start-of-day agent roster.
-
-Agents in `In Meeting` / `Collaborating` states are pulled toward the War Room,
-Strategy Room, or Client Success area, and drift back to their home zone
-afterward — so the office visibly breathes.
-
-### State → animation mapping
-
-Agent states map to Codex Pet animation rows (see
-`src/lib/agentStateAnimation.ts`):
-
-| Agent state | Animation |
-|---|---|
-| Focused | working (idle row) |
-| Thinking | thinking (review row) |
-| In Meeting | wave |
-| Reviewing | review |
-| Blocked | failed |
-| Shipping | jump |
-| Idle | idle |
-| Escalating | failed |
-| Learning | review |
-| Collaborating | wave |
-
----
-
-## How sprites are integrated
-
-1. `scripts/fetch-codex-pets.mjs` downloads real Codex Pets from the public
-   Petdex CDN into `public/sprites/codex-pets/<slug>/`. It writes a
-   `pet.json` + `spritesheet.webp` per pet, plus an `index.json` manifest of
-   what's available.
-2. The Codex Pets spritesheet is a **fixed global atlas**: **8 columns × 9
-   rows**, each frame **192 × 208 px** (full sheet 1536 × 1872). Each animation
-   occupies one row. This contract lives in `src/lib/codexPetSprites.ts`.
-3. `CodexPetSprite` (`src/components/CodexPetSprite.tsx`) renders the correct
-   frame by computing a CSS `background-position` against the scaled
-   `background-size`, advanced by `requestAnimationFrame` against each row's
-   loop duration.
-4. At build time, `index.json` is imported so the renderer knows which pets are
-   present. If a pet is missing, it renders an explicit **"missing sprite"**
-   marker — never a pretty fake.
-
-> See `docs/codex-pets-usage.md` for how to add/remove/map pets and the
-> licensing caveats.
-
----
-
-## Architecture
-
-```
-src/
-  main.tsx, App.tsx, styles.css, types.ts
-  data/        agents.ts, officeZones.ts, furniture.ts, events.ts,
-               codexPetsManifest.ts
-  components/  OfficeWorld, OfficeFloor, AgentSprite, CodexPetSprite,
-               ZoneLayer, FurnitureLayer, AgentInspector, ZoneInspector,
-               EventTimeline, ControlBar, OfficeLegend
-  lib/         simulation.ts, isometric.ts, codexPetSprites.ts,
-               agentStateAnimation.ts
-  types/       codexPet.ts
-public/sprites/codex-pets/<slug>/{pet.json, spritesheet.webp}
-scripts/fetch-codex-pets.mjs
+```bash
+npm run fetch-pets
 ```
 
-### Isometric rendering
+See [`docs/codex-pets-usage.md`](docs/codex-pets-usage.md) before changing or commercially reusing any sprite asset.
 
-A classic 2:1 diamond projection (`src/lib/isometric.ts`):
+## Portfolio context
 
-```
-screen.x = (gridX - gridY) * tileW/2
-screen.y = (gridX + gridY) * tileH/2
-```
+Agent Office World is part of Jovan Franco's AI-native product and systems portfolio. It is designed as evidence of product architecture, operating-model thinking, interactive visualization, and governed AI-system communication—not as proof that a live autonomous workforce is currently operating behind the interface.
 
-Zones are rendered as colored diamonds via CSS `clip-path`. Furniture and
-agents are absolutely positioned and **depth-sorted** by `z-index = gridX +
-gridY` (painter's algorithm) so sprites never overlap incorrectly. The whole
-scene auto-scales to fit the viewport (responsive down to mobile).
+## Contributing
 
----
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution and validation expectations.
 
-## License & attribution
+## Security
 
-- **Source code of this app**: see `LICENSE` (MIT).
-- **Pet sprites**: owned by their respective submitters on Petdex. They are
-  included here for **demo/local use only**. Validate each pet's license
-  before any commercial use. See `docs/codex-pets-usage.md`.
+See [`SECURITY.md`](SECURITY.md). Do not publish sensitive vulnerability details in a public issue.
+
+## License and attribution
+
+- Application source code: MIT; see [`LICENSE`](LICENSE).
+- Codex Pets / Petdex sprites: owned by their respective submitters and not covered by the application MIT license.
+- Validate every sprite's individual terms before commercial use.
