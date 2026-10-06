@@ -58,7 +58,7 @@ const same1=withWallClock("2026-10-06T10:00:00.000Z",()=>withRandomSequence(seqA
 const same2=withWallClock("2026-10-06T22:30:00.000Z",()=>withRandomSequence(seqA,()=>simulateHour(initialSnapshot())));
 const normalize=(x:any)=>({
  agents:x.agents,
- events:x.events.map((e:any)=>({...e,id:e.id.replace(/evt-\\d+-/,"evt-TIME-"),time:"WALLCLOCK"}))
+ events:x.events.map((e:any)=>({...e,id:"EVENT_ID_NORMALIZED",time:"WALLCLOCK"}))
 });
 assert.deepEqual(normalize(same1),normalize(same2),"same RNG stream should otherwise produce same simulation state");
 assert.notDeepEqual(same1.events.map((e:any)=>e.time),same2.events.map((e:any)=>e.time),"event display timestamps should change with browser wall clock");
