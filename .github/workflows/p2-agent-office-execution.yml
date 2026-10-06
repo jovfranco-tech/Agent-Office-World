@@ -1,0 +1,59 @@
+name: Agent Office World P2 Physical Execution
+
+on:
+  push:
+    branches:
+      - audit/p2-exhaustive-agent-office-world-20261006
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/p2-exhaustive-agent-office-world-20261006
+          path: audit-root
+      - uses: actions/checkout@v4
+        with:
+          ref: 5bbae9ac0e607dadb1bb4e599d3a1585ca8608a8
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify exact candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git -C "$GITHUB_WORKSPACE/candidate" rev-parse HEAD)" = "5bbae9ac0e607dadb1bb4e599d3a1585ca8608a8"
+          test -z "$(git -C "$GITHUB_WORKSPACE/candidate" status --porcelain=v1)"
+      - name: Execute P2 package
+        shell: bash
+        run: |
+          set -euo pipefail
+          node "$GITHUB_WORKSPACE/audit-root/audit/agent-office-p2-execution-runner.mjs"             --repo "$GITHUB_WORKSPACE/candidate"             --expected-head 5bbae9ac0e607dadb1bb4e599d3a1585ca8608a8             --report "$RUNNER_TEMP/agent-office-p2.json"             | tee "$RUNNER_TEMP/agent-office-p2-summary.json"
+      - name: Hash evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for f in "$RUNNER_TEMP/agent-office-p2.json" "$RUNNER_TEMP/agent-office-p2-summary.json"; do
+            if [ -f "$f" ]; then sha256sum "$f" | tee "$f.sha256"; fi
+          done
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-office-p2-5bbae9ac
+          path: |
+            ${{ runner.temp }}/agent-office-p2.json
+            ${{ runner.temp }}/agent-office-p2.json.sha256
+            ${{ runner.temp }}/agent-office-p2-summary.json
+            ${{ runner.temp }}/agent-office-p2-summary.json.sha256
+          if-no-files-found: warn
+          retention-days: 30
