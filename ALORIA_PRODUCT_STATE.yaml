@@ -1,0 +1,23 @@
+schema_version: "1.0"
+product: "Agent Office World"
+repository: "jovfranco-tech/Agent-Office-World"
+state_date: "2026-10-07"
+canonical_branch: "main"
+canonical_main_status: "CANONICAL_ACCEPTED"
+classification: "CANONICAL_ACCEPTED"
+current_phase: "current_main_portfolio_product"
+canonical_candidate_sha: "5bbae9ac0e607dadb1bb4e599d3a1585ca8608a8"
+software_closeable_remaining: "public portfolio positioning is merged; main is current repository truth"
+external_gates:
+  - "production/runtime validation"
+  - "commercial proof"
+evidence_boundary:
+  candidate_is_not_main: false
+  main_is_not_production_claim: true
+  technical_gold_is_not_third_party_certification: true
+  commercial_proof_is_separate: true
+promotion_policy:
+  blind_merge_allowed: false
+  exact_sha_validation_required: true
+  preserve_non_claims: true
+  production_deploy_requires_explicit_authorization: true
